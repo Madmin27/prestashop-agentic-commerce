@@ -47,7 +47,7 @@ final class AiJsonDeliveryService
             $ucpDiscoveryUrl
         );
         $body = $this->exporter->encode($document);
-        $this->cache->put($key, $body);
+        $this->cache->putForShop($key, $body, $representation->idShop());
         return $body;
     }
 
@@ -106,20 +106,24 @@ final class AiJsonDeliveryService
             null,
             $ucpDiscoveryUrl
         );
+        $idShop = $representation->idShop();
 
         foreach ($bundle->products() as $variantId => $document) {
-            $this->cache->put(
+            $this->cache->putForShop(
                 $representation->productCacheKey((string) $variantId),
-                $this->exporter->encode($document)
+                $this->exporter->encode($document),
+                $idShop
             );
         }
-        $this->cache->put(
+        $this->cache->putForShop(
             $representation->catalogCacheKey(),
-            $this->exporter->encode($bundle->catalog())
+            $this->exporter->encode($bundle->catalog()),
+            $idShop
         );
-        $this->cache->put(
+        $this->cache->putForShop(
             $representation->catalogCacheKey() . ':manifest',
-            $this->exporter->encode($bundle->manifest())
+            $this->exporter->encode($bundle->manifest()),
+            $idShop
         );
     }
 }
