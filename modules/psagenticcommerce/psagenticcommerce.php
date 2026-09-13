@@ -11,6 +11,7 @@ use PrestaShopAgenticCommerce\Builder\PublicCanonicalBuilder;
 use PrestaShopAgenticCommerce\Export\AiJson\AiJsonCacheStore;
 use PrestaShopAgenticCommerce\Export\AiJson\AiJsonExportCoordinator;
 use PrestaShopAgenticCommerce\Export\AiJson\AiJsonExporter;
+use PrestaShopAgenticCommerce\Install\AiJsonHookInstaller;
 use PrestaShopAgenticCommerce\Install\DatabaseInstaller;
 use PrestaShopAgenticCommerce\Install\WebExposureInstaller;
 use PrestaShopAgenticCommerce\Pricing\PublicPricingResolver;
@@ -18,9 +19,12 @@ use PrestaShopAgenticCommerce\Publication\CanonicalPublicationPolicy;
 use PrestaShopAgenticCommerce\Repository\AiMetaRepository;
 use PrestaShopAgenticCommerce\Repository\EvidenceRepository;
 use PrestaShopAgenticCommerce\Repository\ProductVariantRepository;
+use PrestaShopAgenticCommerce\Support\AiJsonInvalidationHooks;
 
 final class PsAgenticCommerce extends Module
 {
+    use AiJsonInvalidationHooks;
+
     public function __construct()
     {
         $this->name = 'psagenticcommerce';
@@ -45,6 +49,7 @@ final class PsAgenticCommerce extends Module
         return parent::install()
             && (new DatabaseInstaller())->install()
             && $this->registerHook('moduleRoutes')
+            && AiJsonHookInstaller::install($this)
             && (new WebExposureInstaller())->install();
     }
 
