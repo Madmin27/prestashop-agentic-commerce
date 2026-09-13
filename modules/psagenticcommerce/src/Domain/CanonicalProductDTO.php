@@ -80,9 +80,18 @@ final class CanonicalProductDTO implements \JsonSerializable
         $context = $data['context'];
         if (!is_array($context)
             || (int) ($context['id_language'] ?? 0) < 1
+            || !is_string($context['language'] ?? null)
+            || trim((string) $context['language']) === ''
+            || !is_string($context['locale'] ?? null)
+            || trim((string) $context['locale']) === ''
             || (int) ($context['id_currency'] ?? 0) < 1
             || !is_string($context['currency'] ?? null)
-            || strlen((string) $context['currency']) !== 3
+            || preg_match('/^[A-Z]{3}$/', (string) $context['currency']) !== 1
+            || (int) ($context['id_country'] ?? 0) < 1
+            || !is_string($context['country'] ?? null)
+            || preg_match('/^[A-Z]{2}$/', (string) $context['country']) !== 1
+            || !is_string($context['pricing_context'] ?? null)
+            || trim((string) $context['pricing_context']) === ''
         ) {
             throw new \InvalidArgumentException('Invalid canonical representation context.');
         }
