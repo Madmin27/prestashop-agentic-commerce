@@ -68,6 +68,15 @@ final class RepresentationKey implements \JsonSerializable
         );
     }
 
+    public function idShop(): int { return $this->idShop; }
+    public function idLanguage(): int { return $this->idLanguage; }
+    public function idCurrency(): int { return $this->idCurrency; }
+    public function idCountry(): int { return $this->idCountry; }
+    public function language(): string { return $this->language; }
+    public function locale(): string { return $this->locale; }
+    public function currency(): string { return $this->currency; }
+    public function country(): string { return $this->country; }
+
     public function equals(self $other): bool
     {
         return $this->descriptor() === $other->descriptor();
