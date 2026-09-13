@@ -34,8 +34,6 @@ final class PublicCanonicalBuilder
         $data['context']['pricing_context'] = 'public_catalog_tax_included';
         $data['commercial']['realtime_required'] = true;
 
-        // A product configured not to show its price must not have a public price
-        // resolved even transiently. This prevents accidental downstream leakage.
         if (($data['commercial']['show_price'] ?? false) !== true) {
             $data['commercial']['price'] = null;
             return new CanonicalProductDTO($data);
@@ -53,6 +51,8 @@ final class PublicCanonicalBuilder
             $context
         );
 
+        $data['context']['id_country'] = $price->idCountry();
+        $data['context']['country'] = $price->country();
         $data['commercial']['currency'] = $price->currency();
         $data['commercial']['price'] = $price->price();
         $data['commercial']['as_of'] = $price->asOf();
