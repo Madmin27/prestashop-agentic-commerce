@@ -108,6 +108,9 @@ final class UcpCatalogAdapter
             'title' => (string) $first['identity']['title'],
             'description' => ['plain' => $description],
             'url' => (string) $first['links']['canonical_web'],
+            'categories' => [[
+                'value' => (string) $first['category_type'],
+            ]],
             'price_range' => [
                 'min' => ['amount' => min($amounts), 'currency' => $currency],
                 'max' => ['amount' => max($amounts), 'currency' => $currency],
