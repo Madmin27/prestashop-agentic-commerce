@@ -115,12 +115,18 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
     /** @return array<string,mixed>|null */
     private function buildProduct(int $idProduct, ?int $onlyAttribute): ?array
     {
-        $variantIds = $onlyAttribute === null
-            ? $this->source->variantIds($this->context, $idProduct)
-            : [$onlyAttribute];
-
-        if ($variantIds === []) {
+        $shopVariantIds = $this->source->variantIds($this->context, $idProduct);
+        if ($shopVariantIds === []) {
             return null;
+        }
+
+        if ($onlyAttribute !== null) {
+            if (!in_array($onlyAttribute, $shopVariantIds, true)) {
+                return null;
+            }
+            $variantIds = [$onlyAttribute];
+        } else {
+            $variantIds = $shopVariantIds;
         }
 
         $dtos = [];
