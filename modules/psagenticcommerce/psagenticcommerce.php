@@ -11,8 +11,12 @@ use PrestaShopAgenticCommerce\Builder\PublicCanonicalBuilder;
 use PrestaShopAgenticCommerce\Export\AiJson\AiJsonCacheStore;
 use PrestaShopAgenticCommerce\Export\AiJson\AiJsonExportCoordinator;
 use PrestaShopAgenticCommerce\Export\AiJson\AiJsonExporter;
+use PrestaShopAgenticCommerce\Export\OpenAi\OpenAiFeedConfigResolver;
+use PrestaShopAgenticCommerce\Export\OpenAi\OpenAiSnapshotJob;
+use PrestaShopAgenticCommerce\Export\OpenAi\OpenAiSnapshotWriter;
 use PrestaShopAgenticCommerce\Install\AiJsonHookInstaller;
 use PrestaShopAgenticCommerce\Install\DatabaseInstaller;
+use PrestaShopAgenticCommerce\Install\OpenAiConfigInstaller;
 use PrestaShopAgenticCommerce\Install\WebExposureInstaller;
 use PrestaShopAgenticCommerce\Pricing\PublicPricingResolver;
 use PrestaShopAgenticCommerce\Publication\CanonicalPublicationPolicy;
@@ -31,7 +35,7 @@ final class PsAgenticCommerce extends Module
     {
         $this->name = 'psagenticcommerce';
         $this->tab = 'others';
-        $this->version = '0.4.0';
+        $this->version = '0.5.0';
         $this->author = 'PrestaShop Agentic Commerce Contributors';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -50,6 +54,7 @@ final class PsAgenticCommerce extends Module
 
         return parent::install()
             && (new DatabaseInstaller())->install()
+            && (new OpenAiConfigInstaller())->install()
             && $this->registerHook('moduleRoutes')
             && AiJsonHookInstaller::install($this)
             && (new WebExposureInstaller())->install();
@@ -114,5 +119,15 @@ final class PsAgenticCommerce extends Module
     public function createAiJsonCacheStore(): AiJsonCacheStore
     {
         return new AiJsonCacheStore();
+    }
+
+    public function createOpenAiSnapshotJob(): OpenAiSnapshotJob
+    {
+        return new OpenAiSnapshotJob(
+            new ProductVariantRepository(),
+            $this->createPublicCanonicalBuilder(),
+            new OpenAiFeedConfigResolver(),
+            new OpenAiSnapshotWriter()
+        );
     }
 }
