@@ -213,7 +213,9 @@ final class CanonicalBuilder
         $result = [];
         foreach (['recommended_for', 'conditionally_suitable_for', 'not_recommended_for'] as $key) {
             $values = is_array($raw[$key] ?? null) ? $raw[$key] : [];
-            $result[$key] = array_values(array_unique(array_filter(array_map('strval', $values))));
+            $values = array_values(array_unique(array_filter(array_map('strval', $values))));
+            sort($values, SORT_STRING);
+            $result[$key] = $values;
         }
 
         return $result;
@@ -263,10 +265,13 @@ final class CanonicalBuilder
 
     private function plainText(string $value): string
     {
-        return trim(preg_replace(
-            '/\s+/u',
+        $value = preg_replace(
+            '/<\s*\/?\s*(p|div|br|li|ul|ol|h[1-6]|table|tr|td|th)\b[^>]*>/iu',
             ' ',
-            html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8')
-        ) ?? '');
+            $value
+        ) ?? $value;
+        $value = html_entity_decode(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return trim(preg_replace('/\s+/u', ' ', $value) ?? '');
     }
 }
