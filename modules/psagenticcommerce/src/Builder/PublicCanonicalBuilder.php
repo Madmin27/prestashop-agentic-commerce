@@ -2,6 +2,7 @@
 
 namespace PrestaShopAgenticCommerce\Builder;
 
+use PrestaShopAgenticCommerce\Contract\PublicCanonicalProductProviderInterface;
 use PrestaShopAgenticCommerce\Domain\CanonicalProductDTO;
 use PrestaShopAgenticCommerce\Pricing\PublicPricingResolver;
 
@@ -9,7 +10,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-final class PublicCanonicalBuilder
+final class PublicCanonicalBuilder implements PublicCanonicalProductProviderInterface
 {
     private CanonicalBuilder $canonicalBuilder;
     private PublicPricingResolver $pricingResolver;
