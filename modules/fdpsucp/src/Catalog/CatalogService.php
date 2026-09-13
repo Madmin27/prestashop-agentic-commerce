@@ -48,7 +48,8 @@ final class CatalogService
                 $result->totalCount,
                 $result->hasNextPage,
                 $result->cursor,
-                CatalogProtocol::VERSION
+                CatalogProtocol::VERSION,
+                $result->messages
             );
         }
 
@@ -69,7 +70,11 @@ final class CatalogService
                 'filters' => is_array($body['filters'] ?? null) ? $body['filters'] : [],
                 'context' => is_array($body['context'] ?? null) ? $body['context'] : [],
             ]);
-            return $this->lookupResponse($result->products, CatalogProtocol::VERSION);
+            return $this->lookupResponse(
+                $result->products,
+                CatalogProtocol::VERSION,
+                $result->messages
+            );
         }
 
         return $this->defaultLookup($ids);
@@ -141,7 +146,8 @@ final class CatalogService
         ?int $total,
         bool $hasNextPage,
         ?string $cursor,
-        string $version
+        string $version,
+        array $messages = []
     ): Response {
         $pagination = ['has_next_page' => $hasNextPage];
         if ($total !== null) {
@@ -161,11 +167,11 @@ final class CatalogService
             ],
             'products' => $products,
             'pagination' => $pagination,
-            'messages' => [],
+            'messages' => array_values($messages),
         ]);
     }
 
-    private function lookupResponse(array $products, string $version): Response
+    private function lookupResponse(array $products, string $version, array $messages = []): Response
     {
         return Response::json(200, [
             'ucp' => [
@@ -176,7 +182,7 @@ final class CatalogService
                 ],
             ],
             'products' => $products,
-            'messages' => [],
+            'messages' => array_values($messages),
         ]);
     }
 
