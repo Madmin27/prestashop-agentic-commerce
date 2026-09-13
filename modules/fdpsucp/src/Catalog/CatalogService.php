@@ -19,6 +19,7 @@ final class CatalogService
     public function search(array $body): Response
     {
         $query = trim((string) ($body['query'] ?? ''));
+        $filters = is_array($body['filters'] ?? null) ? $body['filters'] : [];
         $pagination = is_array($body['pagination'] ?? null) ? $body['pagination'] : [];
         $limit = min(max((int) ($pagination['limit'] ?? $body['limit'] ?? 10), 1), 50);
         $offset = isset($pagination['cursor'])
@@ -27,9 +28,17 @@ final class CatalogService
 
         $provider = CatalogProviderRegistry::collect()->getProvider();
         if ($provider !== null) {
+            if ($query === '' && $filters === []) {
+                return UcpError::response(
+                    'invalid_search',
+                    'catalog search requires query or filters',
+                    400
+                );
+            }
+
             $result = $provider->search([
                 'query' => $query,
-                'filters' => is_array($body['filters'] ?? null) ? $body['filters'] : [],
+                'filters' => $filters,
                 'context' => is_array($body['context'] ?? null) ? $body['context'] : [],
                 'limit' => $limit,
                 'offset' => $offset,
@@ -123,15 +132,15 @@ final class CatalogService
 
     private function searchResponse(
         array $products,
-        int $total,
+        ?int $total,
         bool $hasNextPage,
         ?string $cursor,
         string $version
     ): Response {
-        $pagination = [
-            'total_count' => max(0, $total),
-            'has_next_page' => $hasNextPage,
-        ];
+        $pagination = ['has_next_page' => $hasNextPage];
+        if ($total !== null) {
+            $pagination['total_count'] = max(0, $total);
+        }
         if ($hasNextPage && $cursor !== null && $cursor !== '') {
             $pagination['cursor'] = $cursor;
         }
