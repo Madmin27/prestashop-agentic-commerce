@@ -38,6 +38,11 @@ final class CanonicalPublicationPolicy
         $data['derived_properties'] = $this->filterSpecs(
             $data['derived_properties'] ?? [], $evidence, 'derived', $strict, true
         );
+        $data['suitability'] = $this->filterSuitability(
+            $data['suitability'] ?? [],
+            $evidence,
+            $strict
+        );
 
         $allowedEvidence = [];
         foreach ($data['verified_specs'] as $key => $value) {
@@ -52,6 +57,17 @@ final class CanonicalPublicationPolicy
                 'hash' => CanonicalValueHash::fromValue($property['value']),
             ];
         }
+        foreach (['recommended_for', 'conditionally_suitable_for', 'not_recommended_for'] as $bucket) {
+            $evidenceKey = 'suitability.' . $bucket;
+            foreach ($data['suitability'][$bucket] as $term) {
+                foreach (['verified', 'declared', 'derived'] as $class) {
+                    $allowedEvidence[$evidenceKey][] = [
+                        'class' => $class,
+                        'hash' => CanonicalValueHash::fromValue($term),
+                    ];
+                }
+            }
+        }
         $data['evidence'] = $this->publicEvidence($evidence, $allowedEvidence);
 
         if (($data['context']['pricing_context'] ?? null) !== 'public_catalog_tax_included'
@@ -64,6 +80,94 @@ final class CanonicalPublicationPolicy
         $data['commercial']['stock_quantity'] = null;
 
         return $data;
+    }
+
+    /**
+     * Positive suitability claims require exact-value public provenance.
+     * Conservative exclusions remain publishable as merchant safety policy even
+     * without evidence so missing provenance can never weaken a safety guard.
+     *
+     * @param mixed $suitability
+     * @param array<string,array<int,array<string,mixed>>> $evidence
+     * @return array<string,array<int,string>>
+     */
+    private function filterSuitability($suitability, array $evidence, bool $strict): array
+    {
+        if (!is_array($suitability)) {
+            throw new \DomainException('Canonical suitability block must be an object.');
+        }
+
+        $result = [
+            'recommended_for' => [],
+            'conditionally_suitable_for' => [],
+            'not_recommended_for' => [],
+        ];
+
+        foreach (['recommended_for', 'conditionally_suitable_for'] as $bucket) {
+            $terms = is_array($suitability[$bucket] ?? null) ? $suitability[$bucket] : [];
+            $evidenceKey = 'suitability.' . $bucket;
+            $records = is_array($evidence[$evidenceKey] ?? null) ? $evidence[$evidenceKey] : [];
+
+            foreach ($terms as $term) {
+                $term = trim((string) $term);
+                if ($term === '') {
+                    continue;
+                }
+                $expectedHash = CanonicalValueHash::fromValue($term);
+                if ($this->hasAnyPublicEvidence($records, $expectedHash)) {
+                    $result[$bucket][] = $term;
+                    continue;
+                }
+
+                if ($strict) {
+                    throw new \DomainException(sprintf(
+                        'Suitability claim %s:%s has no active public provenance.',
+                        $bucket,
+                        $term
+                    ));
+                }
+            }
+        }
+
+        $negativeTerms = is_array($suitability['not_recommended_for'] ?? null)
+            ? $suitability['not_recommended_for']
+            : [];
+        foreach ($negativeTerms as $term) {
+            $term = trim((string) $term);
+            if ($term !== '') {
+                $result['not_recommended_for'][] = $term;
+            }
+        }
+
+        foreach ($result as &$terms) {
+            $terms = array_values(array_unique($terms));
+            sort($terms, SORT_STRING);
+        }
+        unset($terms);
+
+        return $result;
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $records
+     */
+    private function hasAnyPublicEvidence(array $records, string $expectedHash): bool
+    {
+        foreach ($records as $record) {
+            if (!is_array($record)
+                || !in_array(($record['evidence_class'] ?? null), ['verified', 'declared', 'derived'], true)
+                || ($record['status'] ?? null) !== 'active'
+                || ($record['is_public'] ?? false) !== true
+                || !is_string($record['value_hash'] ?? null)
+            ) {
+                continue;
+            }
+            if (hash_equals($expectedHash, (string) $record['value_hash'])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
