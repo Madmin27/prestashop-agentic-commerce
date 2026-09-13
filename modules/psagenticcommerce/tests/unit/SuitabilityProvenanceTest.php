@@ -27,6 +27,19 @@ final class SuitabilityProvenanceTest extends TestCase
         self::assertSame(['climbing'], $out['suitability']['not_recommended_for']);
     }
 
+    public function testDerivedEvidenceCannotPromoteDirectRecommendation(): void
+    {
+        $payload = $this->payload();
+        $payload['suitability']['recommended_for'] = ['lifting'];
+        $payload['evidence']['suitability.recommended_for'] = [
+            $this->evidence('derived', 'lifting'),
+        ];
+
+        $out = (new CanonicalPublicationPolicy())->prepare(new CanonicalProductDTO($payload));
+
+        self::assertSame([], $out['suitability']['recommended_for']);
+    }
+
     public function testStrictModeRejectsUnprovenRecommendation(): void
     {
         $payload = $this->payload();
