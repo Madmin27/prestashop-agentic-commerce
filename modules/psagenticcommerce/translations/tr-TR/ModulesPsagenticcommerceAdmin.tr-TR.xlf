@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="modules/psagenticcommerce" source-language="en" target-language="tr-TR" datatype="plaintext">
+    <body>
+      <trans-unit id="admin.001" approved="yes"><source>PrestaShop Agentic Commerce</source><target xml:lang="tr-TR" state="translated">PrestaShop Agentik Ticaret</target></trans-unit>
+      <trans-unit id="admin.002" approved="yes"><source>Canonical product data, AI JSON, UCP catalog and OpenAI product feed integration.</source><target xml:lang="tr-TR" state="translated">Kanonik ürün verisi, AI JSON, UCP katalog ve OpenAI ürün akışı entegrasyonu.</target></trans-unit>
+      <trans-unit id="admin.003" approved="yes"><source>Uninstall the module? Canonical product metadata will be preserved; OpenAI connection credentials will be removed.</source><target xml:lang="tr-TR" state="translated">Modül kaldırılsın mı? Kanonik ürün meta verileri korunacak; OpenAI bağlantı kimlik bilgileri silinecektir.</target></trans-unit>
+      <trans-unit id="admin.004" approved="yes"><source>Select a concrete shop before configuring this module.</source><target xml:lang="tr-TR" state="translated">Bu modülü yapılandırmadan önce belirli bir mağaza seçin.</target></trans-unit>
+      <trans-unit id="admin.005" approved="yes"><source>OpenAI settings saved for this shop.</source><target xml:lang="tr-TR" state="translated">OpenAI ayarları bu mağaza için kaydedildi.</target></trans-unit>
+      <trans-unit id="admin.006" approved="yes"><source>Snapshot complete: %d exported, %d skipped.</source><target xml:lang="tr-TR" state="translated">Anlık görüntü tamamlandı: %d dışa aktarıldı, %d atlandı.</target></trans-unit>
+      <trans-unit id="admin.007" approved="yes"><source>SFTP upload completed.</source><target xml:lang="tr-TR" state="translated">SFTP yüklemesi tamamlandı.</target></trans-unit>
+      <trans-unit id="admin.008" approved="yes"><source>OpenAI Feed Operations</source><target xml:lang="tr-TR" state="translated">OpenAI Ürün Akışı İşlemleri</target></trans-unit>
+      <trans-unit id="admin.009" approved="yes"><source>Last delivery:</source><target xml:lang="tr-TR" state="translated">Son gönderim:</target></trans-unit>
+      <trans-unit id="admin.010" approved="yes"><source>never</source><target xml:lang="tr-TR" state="translated">hiç yapılmadı</target></trans-unit>
+      <trans-unit id="admin.011" approved="yes"><source>Generate snapshot</source><target xml:lang="tr-TR" state="translated">Anlık görüntü oluştur</target></trans-unit>
+      <trans-unit id="admin.012" approved="yes"><source>Generate &amp; send by SFTP</source><target xml:lang="tr-TR" state="translated">Oluştur ve SFTP ile gönder</target></trans-unit>
+      <trans-unit id="admin.013" approved="yes"><source>Cron endpoint:</source><target xml:lang="tr-TR" state="translated">Cron uç noktası:</target></trans-unit>
+      <trans-unit id="admin.014" approved="yes"><source>Use POST with the X-Agentic-Cron-Token header. The token is intentionally not displayed here.</source><target xml:lang="tr-TR" state="translated">X-Agentic-Cron-Token başlığı ile POST kullanın. Token güvenlik nedeniyle burada gösterilmez.</target></trans-unit>
+      <trans-unit id="admin.015" approved="yes"><source>OpenAI Merchant Feed</source><target xml:lang="tr-TR" state="translated">OpenAI Satıcı Ürün Akışı</target></trans-unit>
+      <trans-unit id="admin.016" approved="yes"><source>These values are stored per shop and used to build the OpenAI full product snapshot.</source><target xml:lang="tr-TR" state="translated">Bu değerler mağaza bazında saklanır ve OpenAI tam ürün anlık görüntüsünü oluşturmak için kullanılır.</target></trans-unit>
+      <trans-unit id="admin.017" approved="yes"><source>Seller name</source><target xml:lang="tr-TR" state="translated">Satıcı adı</target></trans-unit>
+      <trans-unit id="admin.018" approved="yes"><source>Seller URL</source><target xml:lang="tr-TR" state="translated">Satıcı URL'si</target></trans-unit>
+      <trans-unit id="admin.019" approved="yes"><source>Return policy URL</source><target xml:lang="tr-TR" state="translated">İade politikası URL'si</target></trans-unit>
+      <trans-unit id="admin.020" approved="yes"><source>Target countries</source><target xml:lang="tr-TR" state="translated">Hedef ülkeler</target></trans-unit>
+      <trans-unit id="admin.021" approved="yes"><source>Store country</source><target xml:lang="tr-TR" state="translated">Mağaza ülkesi</target></trans-unit>
+      <trans-unit id="admin.022" approved="yes"><source>Default brand</source><target xml:lang="tr-TR" state="translated">Varsayılan marka</target></trans-unit>
+      <trans-unit id="admin.023" approved="yes"><source>Eligible for search</source><target xml:lang="tr-TR" state="translated">Arama için uygun</target></trans-unit>
+      <trans-unit id="admin.024" approved="yes"><source>Eligible for checkout</source><target xml:lang="tr-TR" state="translated">Ödeme için uygun</target></trans-unit>
+      <trans-unit id="admin.025" approved="yes"><source>Privacy policy URL</source><target xml:lang="tr-TR" state="translated">Gizlilik politikası URL'si</target></trans-unit>
+      <trans-unit id="admin.026" approved="yes"><source>Terms URL</source><target xml:lang="tr-TR" state="translated">Koşullar URL'si</target></trans-unit>
+      <trans-unit id="admin.027" approved="yes"><source>Ads eligibility</source><target xml:lang="tr-TR" state="translated">Reklam uygunluğu</target></trans-unit>
+      <trans-unit id="admin.028" approved="yes"><source>Not specified</source><target xml:lang="tr-TR" state="translated">Belirtilmedi</target></trans-unit>
+      <trans-unit id="admin.029" approved="yes"><source>Eligible</source><target xml:lang="tr-TR" state="translated">Uygun</target></trans-unit>
+      <trans-unit id="admin.030" approved="yes"><source>Not eligible</source><target xml:lang="tr-TR" state="translated">Uygun değil</target></trans-unit>
+      <trans-unit id="admin.031" approved="yes"><source>OpenAI SFTP Delivery</source><target xml:lang="tr-TR" state="translated">OpenAI SFTP Gönderimi</target></trans-unit>
+      <trans-unit id="admin.032" approved="yes"><source>Enter the SFTP values provided during merchant onboarding. Host-key verification is mandatory.</source><target xml:lang="tr-TR" state="translated">Satıcı onboarding sürecinde verilen SFTP bilgilerini girin. Sunucu anahtarı doğrulaması zorunludur.</target></trans-unit>
+      <trans-unit id="admin.033" approved="yes"><source>Enable SFTP delivery</source><target xml:lang="tr-TR" state="translated">SFTP gönderimini etkinleştir</target></trans-unit>
+      <trans-unit id="admin.034" approved="yes"><source>SFTP host</source><target xml:lang="tr-TR" state="translated">SFTP sunucusu</target></trans-unit>
+      <trans-unit id="admin.035" approved="yes"><source>SFTP port</source><target xml:lang="tr-TR" state="translated">SFTP portu</target></trans-unit>
+      <trans-unit id="admin.036" approved="yes"><source>Username</source><target xml:lang="tr-TR" state="translated">Kullanıcı adı</target></trans-unit>
+      <trans-unit id="admin.037" approved="yes"><source>Authentication</source><target xml:lang="tr-TR" state="translated">Kimlik doğrulama</target></trans-unit>
+      <trans-unit id="admin.038" approved="yes"><source>Account secret</source><target xml:lang="tr-TR" state="translated">Hesap parolası</target></trans-unit>
+      <trans-unit id="admin.039" approved="yes"><source>SSH public key</source><target xml:lang="tr-TR" state="translated">SSH açık anahtarı</target></trans-unit>
+      <trans-unit id="admin.040" approved="yes"><source>Authentication secret</source><target xml:lang="tr-TR" state="translated">Kimlik doğrulama parolası</target></trans-unit>
+      <trans-unit id="admin.041" approved="yes"><source>Leave blank to keep the currently stored encrypted value.</source><target xml:lang="tr-TR" state="translated">Mevcut şifreli değeri korumak için boş bırakın.</target></trans-unit>
+      <trans-unit id="admin.042" approved="yes"><source>Clear stored authentication secret</source><target xml:lang="tr-TR" state="translated">Kayıtlı kimlik doğrulama parolasını temizle</target></trans-unit>
+      <trans-unit id="admin.043" approved="yes"><source>Private key file path</source><target xml:lang="tr-TR" state="translated">Özel anahtar dosya yolu</target></trans-unit>
+      <trans-unit id="admin.044" approved="yes"><source>Public key file path</source><target xml:lang="tr-TR" state="translated">Açık anahtar dosya yolu</target></trans-unit>
+      <trans-unit id="admin.045" approved="yes"><source>Private-key passphrase</source><target xml:lang="tr-TR" state="translated">Özel anahtar parolası</target></trans-unit>
+      <trans-unit id="admin.046" approved="yes"><source>Clear stored key passphrase</source><target xml:lang="tr-TR" state="translated">Kayıtlı anahtar parolasını temizle</target></trans-unit>
+      <trans-unit id="admin.047" approved="yes"><source>Remote file path</source><target xml:lang="tr-TR" state="translated">Uzak dosya yolu</target></trans-unit>
+      <trans-unit id="admin.048" approved="yes"><source>SSH host key SHA256</source><target xml:lang="tr-TR" state="translated">SSH sunucu anahtarı SHA256</target></trans-unit>
+      <trans-unit id="admin.049" approved="yes"><source>SSH host key MD5 fallback</source><target xml:lang="tr-TR" state="translated">SSH sunucu anahtarı MD5 yedeği</target></trans-unit>
+      <trans-unit id="admin.050" approved="yes"><source>known_hosts file path</source><target xml:lang="tr-TR" state="translated">known_hosts dosya yolu</target></trans-unit>
+      <trans-unit id="admin.051" approved="yes"><source>Transfer timeout (seconds)</source><target xml:lang="tr-TR" state="translated">Aktarım zaman aşımı (saniye)</target></trans-unit>
+      <trans-unit id="admin.052" approved="yes"><source>Cron token</source><target xml:lang="tr-TR" state="translated">Cron tokenı</target></trans-unit>
+      <trans-unit id="admin.053" approved="yes"><source>Use this only in the X-Agentic-Cron-Token HTTP header. Do not put it in the cron URL.</source><target xml:lang="tr-TR" state="translated">Bunu yalnızca X-Agentic-Cron-Token HTTP başlığında kullanın. Cron URL'sine eklemeyin.</target></trans-unit>
+      <trans-unit id="admin.054" approved="yes"><source>Save settings</source><target xml:lang="tr-TR" state="translated">Ayarları kaydet</target></trans-unit>
+      <trans-unit id="admin.055" approved="yes"><source>Yes</source><target xml:lang="tr-TR" state="translated">Evet</target></trans-unit>
+      <trans-unit id="admin.056" approved="yes"><source>No</source><target xml:lang="tr-TR" state="translated">Hayır</target></trans-unit>
+    </body>
+  </file>
+</xliff>
