@@ -2,7 +2,10 @@ name: Lint & Test
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - 'agentic-commerce-*'
+      - 'catalog-provider-*'
   pull_request:
     branches: [main]
 
