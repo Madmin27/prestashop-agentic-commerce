@@ -21,6 +21,9 @@ final class PublicPricingResolver
         $originalCustomer = $context->customer;
         $originalCart = $context->cart;
         $originalTaxCalculationMethod = \Product::$_taxCalculationMethod;
+        $originalCustomerId = \Validate::isLoadedObject($originalCustomer)
+            ? (int) $originalCustomer->id
+            : null;
 
         try {
             // Force anonymous catalog semantics. Group::getCurrent() resolves to
@@ -53,6 +56,10 @@ final class PublicPricingResolver
             $context->customer = $originalCustomer;
             $context->cart = $originalCart;
             \Product::$_taxCalculationMethod = $originalTaxCalculationMethod;
+
+            // Reinitialize the static pricing state for the original customer.
+            // This avoids leaving the request in anonymous-group pricing mode.
+            \Product::initPricesComputation($originalCustomerId);
         }
     }
 }
