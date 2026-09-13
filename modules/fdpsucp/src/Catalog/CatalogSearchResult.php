@@ -10,19 +10,19 @@ final class CatalogSearchResult
 {
     /** @var array<int,array<string,mixed>> */
     public array $products;
-    public int $totalCount;
+    public ?int $totalCount;
     public bool $hasNextPage;
     public ?string $cursor;
 
     /** @param array<int,array<string,mixed>> $products */
     public function __construct(
         array $products,
-        int $totalCount,
+        ?int $totalCount,
         bool $hasNextPage,
         ?string $cursor = null
     ) {
         $this->products = $products;
-        $this->totalCount = max(0, $totalCount);
+        $this->totalCount = $totalCount === null ? null : max(0, $totalCount);
         $this->hasNextPage = $hasNextPage;
         $this->cursor = $hasNextPage ? $cursor : null;
 
