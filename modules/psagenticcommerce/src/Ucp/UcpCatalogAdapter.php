@@ -67,10 +67,13 @@ final class UcpCatalogAdapter
             $availability = (string) $data['commercial']['availability'];
             $available = (bool) $data['commercial']['orderable']
                 && in_array($availability, ['in_stock', 'backorder', 'preorder'], true);
+            $description = $this->description($data);
 
             $variant = [
                 'id' => (string) $data['canonical_variant_id'],
                 'title' => (string) $data['identity']['title'],
+                'description' => ['plain' => $description],
+                'url' => (string) $data['links']['canonical_web'],
                 'price' => ['amount' => $amount, 'currency' => $currency],
                 'availability' => [
                     'available' => $available,
@@ -79,6 +82,17 @@ final class UcpCatalogAdapter
             ];
             if (!empty($data['identity']['sku'])) {
                 $variant['sku'] = (string) $data['identity']['sku'];
+            }
+            if (!empty($data['identity']['gtin'])) {
+                $variant['barcodes'] = [[
+                    'type' => 'GTIN',
+                    'value' => (string) $data['identity']['gtin'],
+                ]];
+            }
+
+            $quantityUnit = $this->quantityUnit((string) ($data['commercial']['sale_unit'] ?? 'piece'));
+            if ($quantityUnit !== null) {
+                $variant['quantity_unit'] = $quantityUnit;
             }
 
             $options = [];
@@ -98,18 +112,14 @@ final class UcpCatalogAdapter
             $ucpVariants[] = $variant;
         }
 
-        $description = trim((string) ($first['content']['description'] ?? ''));
-        if ($description === '') {
-            $description = trim((string) ($first['content']['short_description'] ?? ''));
-        }
-
         $product = [
             'id' => (string) $first['product_group_id'],
             'title' => (string) $first['identity']['title'],
-            'description' => ['plain' => $description],
+            'description' => ['plain' => $this->description($first)],
             'url' => (string) $first['links']['canonical_web'],
             'categories' => [[
                 'value' => (string) $first['category_type'],
+                'taxonomy' => 'merchant',
             ]],
             'price_range' => [
                 'min' => ['amount' => min($amounts), 'currency' => $currency],
@@ -135,9 +145,33 @@ final class UcpCatalogAdapter
         return $product;
     }
 
+    /** @param array<string,mixed> $data */
+    private function description(array $data): string
+    {
+        $description = trim((string) ($data['content']['description'] ?? ''));
+        return $description !== ''
+            ? $description
+            : trim((string) ($data['content']['short_description'] ?? ''));
+    }
+
     private function minor(float $amount): int
     {
         return (int) round($amount * 100);
+    }
+
+    /** @return array<string,mixed>|null */
+    private function quantityUnit(string $saleUnit): ?array
+    {
+        $normalized = strtolower(trim($saleUnit));
+        return match ($normalized) {
+            'piece', 'each', 'unit' => null,
+            'meter', 'metre', 'm' => ['unit' => 'MTR', 'scale' => 0, 'display_text' => 'm'],
+            'kilogram', 'kg' => ['unit' => 'KGM', 'scale' => 0, 'display_text' => 'kg'],
+            'gram', 'g' => ['unit' => 'GRM', 'scale' => 0, 'display_text' => 'g'],
+            default => $normalized === ''
+                ? null
+                : ['unit' => $normalized, 'scale' => 0, 'display_text' => $saleUnit],
+        };
     }
 
     /** @param mixed $media @return array<int,array<string,mixed>> */
@@ -155,8 +189,8 @@ final class UcpCatalogAdapter
                 'type' => (string) ($item['type'] ?? 'image'),
                 'url' => (string) $item['url'],
             ];
-            if (isset($item['alt']) && $item['alt'] !== null) {
-                $entry['alt'] = (string) $item['alt'];
+            if (isset($item['alt']) && $item['alt'] !== null && trim((string) $item['alt']) !== '') {
+                $entry['alt_text'] = (string) $item['alt'];
             }
             $result[] = $entry;
         }
