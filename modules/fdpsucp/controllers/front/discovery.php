@@ -7,11 +7,12 @@
  *   /module/fdpsucp/discovery
  *   /.well-known/ucp
  *
- * Catalog capability versioning is advertised independently from the older
- * transactional service version until cart/checkout are upgraded separately.
+ * When an external catalog provider is registered, the catalog capability can
+ * advertise a newer version without falsely upgrading cart/checkout.
  */
 
 use FD\PrismUcp\Catalog\CatalogProtocol;
+use FD\PrismUcp\Catalog\CatalogProviderRegistry;
 use FD\PrismUcp\Payment\PaymentRegistry;
 use FD\PrismUcp\Ucp\Formatter;
 
@@ -33,17 +34,20 @@ class FdPsUcpDiscoveryModuleFrontController extends ModuleFrontController
         $registry = PaymentRegistry::collect();
 
         $profile = Formatter::profile($endpoint, $storeName, $registry);
-        $base = CatalogProtocol::specBase();
-        $profile['ucp']['capabilities']['dev.ucp.shopping.catalog.search'] = [[
-            'version' => CatalogProtocol::VERSION,
-            'spec' => $base . '/specification/shopping/catalog/search',
-            'schema' => $base . '/schemas/shopping/catalog_search.json',
-        ]];
-        $profile['ucp']['capabilities']['dev.ucp.shopping.catalog.lookup'] = [[
-            'version' => CatalogProtocol::VERSION,
-            'spec' => $base . '/specification/shopping/catalog/lookup',
-            'schema' => $base . '/schemas/shopping/catalog_lookup.json',
-        ]];
+
+        if (CatalogProviderRegistry::collect()->hasProvider()) {
+            $base = CatalogProtocol::specBase();
+            $profile['ucp']['capabilities']['dev.ucp.shopping.catalog.search'] = [[
+                'version' => CatalogProtocol::VERSION,
+                'spec' => $base . '/specification/shopping/catalog/search',
+                'schema' => $base . '/schemas/shopping/catalog_search.json',
+            ]];
+            $profile['ucp']['capabilities']['dev.ucp.shopping.catalog.lookup'] = [[
+                'version' => CatalogProtocol::VERSION,
+                'spec' => $base . '/specification/shopping/catalog/lookup',
+                'schema' => $base . '/schemas/shopping/catalog_lookup.json',
+            ]];
+        }
 
         header('Content-Type: application/json');
         header('Cache-Control: public, max-age=300');
