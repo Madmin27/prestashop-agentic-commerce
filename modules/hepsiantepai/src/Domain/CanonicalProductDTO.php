@@ -32,6 +32,7 @@ final class CanonicalProductDTO implements \JsonSerializable
         foreach ([
             'schema_version',
             'canonical_variant_id',
+            'category_type',
             'source',
             'context',
             'timestamps',
@@ -50,6 +51,14 @@ final class CanonicalProductDTO implements \JsonSerializable
 
         if (($data['schema_version'] ?? null) !== '1.0') {
             throw new \InvalidArgumentException('Unsupported canonical schema version.');
+        }
+
+        if (!is_string($data['canonical_variant_id']) || trim($data['canonical_variant_id']) === '') {
+            throw new \InvalidArgumentException('Canonical variant id is required.');
+        }
+
+        if (!is_string($data['category_type']) || trim($data['category_type']) === '') {
+            throw new \InvalidArgumentException('Category type is required.');
         }
 
         $source = $data['source'];
