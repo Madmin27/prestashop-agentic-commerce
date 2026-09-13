@@ -11,6 +11,10 @@ final class DatabaseInstaller
     public function install(): bool
     {
         $db = \Db::getInstance();
+        if (!$this->migrateLegacyTableNames($db)) {
+            return false;
+        }
+
         $engine = _MYSQL_ENGINE_;
         $meta = _DB_PREFIX_ . 'agenticcommerce_product_meta';
         $evidence = _DB_PREFIX_ . 'agenticcommerce_evidence';
@@ -59,7 +63,17 @@ final class DatabaseInstaller
             KEY `idx_public_status` (`is_public`,`status`)
         ) ENGINE=$engine DEFAULT CHARSET=utf8mb4";
 
-        return $db->execute($metaSql) && $db->execute($evidenceSql);
+        if (!$db->execute($metaSql) || !$db->execute($evidenceSql)) {
+            return false;
+        }
+
+        return $this->ensureCurrentColumns($db);
+    }
+
+    public function upgrade(): bool
+    {
+        $db = \Db::getInstance();
+        return $this->migrateLegacyTableNames($db) && $this->ensureCurrentColumns($db);
     }
 
     /**
@@ -69,5 +83,71 @@ final class DatabaseInstaller
     public function uninstall(): bool
     {
         return true;
+    }
+
+    private function migrateLegacyTableNames(\Db $db): bool
+    {
+        $renames = [
+            _DB_PREFIX_ . 'agentic_product_meta' => _DB_PREFIX_ . 'agenticcommerce_product_meta',
+            _DB_PREFIX_ . 'agentic_evidence' => _DB_PREFIX_ . 'agenticcommerce_evidence',
+        ];
+
+        foreach ($renames as $legacy => $current) {
+            if (!$this->tableExists($db, $legacy) || $this->tableExists($db, $current)) {
+                continue;
+            }
+            if (!$db->execute("RENAME TABLE `$legacy` TO `$current`")) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function ensureCurrentColumns(\Db $db): bool
+    {
+        $meta = _DB_PREFIX_ . 'agenticcommerce_product_meta';
+        $evidence = _DB_PREFIX_ . 'agenticcommerce_evidence';
+
+        if ($this->tableExists($db, $meta)) {
+            if (!$db->execute("ALTER TABLE `$meta`
+                MODIFY `category_type` VARCHAR(64) NULL,
+                MODIFY `sale_unit` VARCHAR(32) NULL")) {
+                return false;
+            }
+        }
+
+        if ($this->tableExists($db, $evidence) && !$this->columnExists($db, $evidence, 'value_hash')) {
+            if (!$db->execute("ALTER TABLE `$evidence` ADD `value_hash` CHAR(64) NULL AFTER `property_key`")) {
+                return false;
+            }
+        }
+
+        if ($this->tableExists($db, $evidence) && !$this->indexExists($db, $evidence, 'idx_value')) {
+            if (!$db->execute("ALTER TABLE `$evidence` ADD KEY `idx_value` (`property_key`,`value_hash`)")) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function tableExists(\Db $db, string $table): bool
+    {
+        $sql = "SELECT COUNT(*) FROM information_schema.tables
+            WHERE table_schema = DATABASE() AND table_name = '" . pSQL($table) . "'";
+        return (int) $db->getValue($sql) > 0;
+    }
+
+    private function columnExists(\Db $db, string $table, string $column): bool
+    {
+        $row = $db->getRow("SHOW COLUMNS FROM `$table` LIKE '" . pSQL($column) . "'");
+        return is_array($row) && $row !== [];
+    }
+
+    private function indexExists(\Db $db, string $table, string $index): bool
+    {
+        $row = $db->getRow("SHOW INDEX FROM `$table` WHERE `Key_name` = '" . pSQL($index) . "'");
+        return is_array($row) && $row !== [];
     }
 }
