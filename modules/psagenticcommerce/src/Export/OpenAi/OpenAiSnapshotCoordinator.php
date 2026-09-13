@@ -36,7 +36,7 @@ final class OpenAiSnapshotCoordinator
                     $this->exporter->row($dto),
                     JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
                 );
-            } catch (\Throwable $e) {
+            } catch (\Exception $e) {
                 $skipped[] = [
                     'id_product' => $idProduct,
                     'id_product_attribute' => $idProductAttribute,
