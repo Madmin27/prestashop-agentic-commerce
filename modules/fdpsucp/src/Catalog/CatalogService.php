@@ -103,10 +103,10 @@ final class CatalogService
     {
         return Response::json(200, [
             'ucp' => [
-                'version' => Formatter::UCP_VERSION,
+                'version' => CatalogProtocol::VERSION,
                 'status' => 'success',
                 'capabilities' => [
-                    'dev.ucp.shopping.catalog.search' => [['version' => Formatter::UCP_VERSION]],
+                    'dev.ucp.shopping.catalog.search' => [['version' => CatalogProtocol::VERSION]],
                 ],
             ],
             'products' => $products,
@@ -122,10 +122,10 @@ final class CatalogService
     {
         return Response::json(200, [
             'ucp' => [
-                'version' => Formatter::UCP_VERSION,
+                'version' => CatalogProtocol::VERSION,
                 'status' => 'success',
                 'capabilities' => [
-                    'dev.ucp.shopping.catalog.lookup' => [['version' => Formatter::UCP_VERSION]],
+                    'dev.ucp.shopping.catalog.lookup' => [['version' => CatalogProtocol::VERSION]],
                 ],
             ],
             'products' => $products,
