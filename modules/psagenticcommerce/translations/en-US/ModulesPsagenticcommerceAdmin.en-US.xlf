@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="modules/psagenticcommerce" source-language="en" target-language="en-US" datatype="plaintext">
+    <body>
+      <trans-unit id="admin.001" approved="yes"><source>PrestaShop Agentic Commerce</source><target xml:lang="en-US" state="translated">PrestaShop Agentic Commerce</target></trans-unit>
+      <trans-unit id="admin.002" approved="yes"><source>Canonical product data, AI JSON, UCP catalog and OpenAI product feed integration.</source><target xml:lang="en-US" state="translated">Canonical product data, AI JSON, UCP catalog and OpenAI product feed integration.</target></trans-unit>
+      <trans-unit id="admin.003" approved="yes"><source>Uninstall the module? Canonical product metadata will be preserved; OpenAI connection credentials will be removed.</source><target xml:lang="en-US" state="translated">Uninstall the module? Canonical product metadata will be preserved; OpenAI connection credentials will be removed.</target></trans-unit>
+      <trans-unit id="admin.004" approved="yes"><source>Select a concrete shop before configuring this module.</source><target xml:lang="en-US" state="translated">Select a concrete shop before configuring this module.</target></trans-unit>
+      <trans-unit id="admin.005" approved="yes"><source>OpenAI settings saved for this shop.</source><target xml:lang="en-US" state="translated">OpenAI settings saved for this shop.</target></trans-unit>
+      <trans-unit id="admin.006" approved="yes"><source>Snapshot complete: %d exported, %d skipped.</source><target xml:lang="en-US" state="translated">Snapshot complete: %d exported, %d skipped.</target></trans-unit>
+      <trans-unit id="admin.007" approved="yes"><source>SFTP upload completed.</source><target xml:lang="en-US" state="translated">SFTP upload completed.</target></trans-unit>
+      <trans-unit id="admin.008" approved="yes"><source>OpenAI Feed Operations</source><target xml:lang="en-US" state="translated">OpenAI Feed Operations</target></trans-unit>
+      <trans-unit id="admin.009" approved="yes"><source>Last delivery:</source><target xml:lang="en-US" state="translated">Last delivery:</target></trans-unit>
+      <trans-unit id="admin.010" approved="yes"><source>never</source><target xml:lang="en-US" state="translated">never</target></trans-unit>
+      <trans-unit id="admin.011" approved="yes"><source>Generate snapshot</source><target xml:lang="en-US" state="translated">Generate snapshot</target></trans-unit>
+      <trans-unit id="admin.012" approved="yes"><source>Generate &amp; send by SFTP</source><target xml:lang="en-US" state="translated">Generate &amp; send by SFTP</target></trans-unit>
+      <trans-unit id="admin.013" approved="yes"><source>Cron endpoint:</source><target xml:lang="en-US" state="translated">Cron endpoint:</target></trans-unit>
+      <trans-unit id="admin.014" approved="yes"><source>Use POST with the X-Agentic-Cron-Token header. The token is intentionally not displayed here.</source><target xml:lang="en-US" state="translated">Use POST with the X-Agentic-Cron-Token header. The token is intentionally not displayed here.</target></trans-unit>
+      <trans-unit id="admin.015" approved="yes"><source>OpenAI Merchant Feed</source><target xml:lang="en-US" state="translated">OpenAI Merchant Feed</target></trans-unit>
+      <trans-unit id="admin.016" approved="yes"><source>These values are stored per shop and used to build the OpenAI full product snapshot.</source><target xml:lang="en-US" state="translated">These values are stored per shop and used to build the OpenAI full product snapshot.</target></trans-unit>
+      <trans-unit id="admin.017" approved="yes"><source>Seller name</source><target xml:lang="en-US" state="translated">Seller name</target></trans-unit>
+      <trans-unit id="admin.018" approved="yes"><source>Seller URL</source><target xml:lang="en-US" state="translated">Seller URL</target></trans-unit>
+      <trans-unit id="admin.019" approved="yes"><source>Return policy URL</source><target xml:lang="en-US" state="translated">Return policy URL</target></trans-unit>
+      <trans-unit id="admin.020" approved="yes"><source>Target countries</source><target xml:lang="en-US" state="translated">Target countries</target></trans-unit>
+      <trans-unit id="admin.021" approved="yes"><source>Store country</source><target xml:lang="en-US" state="translated">Store country</target></trans-unit>
+      <trans-unit id="admin.022" approved="yes"><source>Default brand</source><target xml:lang="en-US" state="translated">Default brand</target></trans-unit>
+      <trans-unit id="admin.023" approved="yes"><source>Eligible for search</source><target xml:lang="en-US" state="translated">Eligible for search</target></trans-unit>
+      <trans-unit id="admin.024" approved="yes"><source>Eligible for checkout</source><target xml:lang="en-US" state="translated">Eligible for checkout</target></trans-unit>
+      <trans-unit id="admin.025" approved="yes"><source>Privacy policy URL</source><target xml:lang="en-US" state="translated">Privacy policy URL</target></trans-unit>
+      <trans-unit id="admin.026" approved="yes"><source>Terms URL</source><target xml:lang="en-US" state="translated">Terms URL</target></trans-unit>
+      <trans-unit id="admin.027" approved="yes"><source>Ads eligibility</source><target xml:lang="en-US" state="translated">Ads eligibility</target></trans-unit>
+      <trans-unit id="admin.028" approved="yes"><source>Not specified</source><target xml:lang="en-US" state="translated">Not specified</target></trans-unit>
+      <trans-unit id="admin.029" approved="yes"><source>Eligible</source><target xml:lang="en-US" state="translated">Eligible</target></trans-unit>
+      <trans-unit id="admin.030" approved="yes"><source>Not eligible</source><target xml:lang="en-US" state="translated">Not eligible</target></trans-unit>
+      <trans-unit id="admin.031" approved="yes"><source>OpenAI SFTP Delivery</source><target xml:lang="en-US" state="translated">OpenAI SFTP Delivery</target></trans-unit>
+      <trans-unit id="admin.032" approved="yes"><source>Enter the SFTP values provided during merchant onboarding. Host-key verification is mandatory.</source><target xml:lang="en-US" state="translated">Enter the SFTP values provided during merchant onboarding. Host-key verification is mandatory.</target></trans-unit>
+      <trans-unit id="admin.033" approved="yes"><source>Enable SFTP delivery</source><target xml:lang="en-US" state="translated">Enable SFTP delivery</target></trans-unit>
+      <trans-unit id="admin.034" approved="yes"><source>SFTP host</source><target xml:lang="en-US" state="translated">SFTP host</target></trans-unit>
+      <trans-unit id="admin.035" approved="yes"><source>SFTP port</source><target xml:lang="en-US" state="translated">SFTP port</target></trans-unit>
+      <trans-unit id="admin.036" approved="yes"><source>Username</source><target xml:lang="en-US" state="translated">Username</target></trans-unit>
+      <trans-unit id="admin.037" approved="yes"><source>Authentication</source><target xml:lang="en-US" state="translated">Authentication</target></trans-unit>
+      <trans-unit id="admin.038" approved="yes"><source>Account secret</source><target xml:lang="en-US" state="translated">Account secret</target></trans-unit>
+      <trans-unit id="admin.039" approved="yes"><source>SSH public key</source><target xml:lang="en-US" state="translated">SSH public key</target></trans-unit>
+      <trans-unit id="admin.040" approved="yes"><source>Authentication secret</source><target xml:lang="en-US" state="translated">Authentication secret</target></trans-unit>
+      <trans-unit id="admin.041" approved="yes"><source>Leave blank to keep the currently stored encrypted value.</source><target xml:lang="en-US" state="translated">Leave blank to keep the currently stored encrypted value.</target></trans-unit>
+      <trans-unit id="admin.042" approved="yes"><source>Clear stored authentication secret</source><target xml:lang="en-US" state="translated">Clear stored authentication secret</target></trans-unit>
+      <trans-unit id="admin.043" approved="yes"><source>Private key file path</source><target xml:lang="en-US" state="translated">Private key file path</target></trans-unit>
+      <trans-unit id="admin.044" approved="yes"><source>Public key file path</source><target xml:lang="en-US" state="translated">Public key file path</target></trans-unit>
+      <trans-unit id="admin.045" approved="yes"><source>Private-key passphrase</source><target xml:lang="en-US" state="translated">Private-key passphrase</target></trans-unit>
+      <trans-unit id="admin.046" approved="yes"><source>Clear stored key passphrase</source><target xml:lang="en-US" state="translated">Clear stored key passphrase</target></trans-unit>
+      <trans-unit id="admin.047" approved="yes"><source>Remote file path</source><target xml:lang="en-US" state="translated">Remote file path</target></trans-unit>
+      <trans-unit id="admin.048" approved="yes"><source>SSH host key SHA256</source><target xml:lang="en-US" state="translated">SSH host key SHA256</target></trans-unit>
+      <trans-unit id="admin.049" approved="yes"><source>SSH host key MD5 fallback</source><target xml:lang="en-US" state="translated">SSH host key MD5 fallback</target></trans-unit>
+      <trans-unit id="admin.050" approved="yes"><source>known_hosts file path</source><target xml:lang="en-US" state="translated">known_hosts file path</target></trans-unit>
+      <trans-unit id="admin.051" approved="yes"><source>Transfer timeout (seconds)</source><target xml:lang="en-US" state="translated">Transfer timeout (seconds)</target></trans-unit>
+      <trans-unit id="admin.052" approved="yes"><source>Cron token</source><target xml:lang="en-US" state="translated">Cron token</target></trans-unit>
+      <trans-unit id="admin.053" approved="yes"><source>Use this only in the X-Agentic-Cron-Token HTTP header. Do not put it in the cron URL.</source><target xml:lang="en-US" state="translated">Use this only in the X-Agentic-Cron-Token HTTP header. Do not put it in the cron URL.</target></trans-unit>
+      <trans-unit id="admin.054" approved="yes"><source>Save settings</source><target xml:lang="en-US" state="translated">Save settings</target></trans-unit>
+      <trans-unit id="admin.055" approved="yes"><source>Yes</source><target xml:lang="en-US" state="translated">Yes</target></trans-unit>
+      <trans-unit id="admin.056" approved="yes"><source>No</source><target xml:lang="en-US" state="translated">No</target></trans-unit>
+    </body>
+  </file>
+</xliff>
