@@ -117,6 +117,6 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
 
     private function cursor(int $offset): string
     {
-        return rtrim(strtr(base64_encode((string) max(0, $offset)), '+/', '-_'), '=');
+        return rtrim(strtr(base64_encode('o:' . max(0, $offset)), '+/', '-_'), '=');
     }
 }
