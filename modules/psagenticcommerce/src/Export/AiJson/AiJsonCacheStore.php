@@ -18,11 +18,22 @@ final class AiJsonCacheStore
 
     public function get(string $key, int $ttl): ?string
     {
+        return $this->getForShop($key, $ttl, 0);
+    }
+
+    public function getForShop(string $key, int $ttl, int $idShop): ?string
+    {
         $path = $this->path($key);
         if (!is_file($path)) {
             return null;
         }
-        if ($ttl >= 0 && (time() - (int) @filemtime($path)) > $ttl) {
+
+        $mtime = (int) @filemtime($path);
+        if ($ttl >= 0 && (time() - $mtime) > $ttl) {
+            return null;
+        }
+
+        if ($idShop > 0 && $this->invalidatedAt($idShop) > $mtime) {
             return null;
         }
 
@@ -47,12 +58,37 @@ final class AiJsonCacheStore
         }
     }
 
+    public function invalidateShop(int $idShop): void
+    {
+        if ($idShop < 1) {
+            return;
+        }
+
+        if (!is_dir($this->directory) && !@mkdir($this->directory, 0775, true) && !is_dir($this->directory)) {
+            throw new \RuntimeException('Could not create AI JSON cache directory.');
+        }
+
+        $marker = $this->invalidationPath($idShop);
+        @touch($marker, time());
+    }
+
     public function delete(string $key): void
     {
         $path = $this->path($key);
         if (is_file($path)) {
             @unlink($path);
         }
+    }
+
+    private function invalidatedAt(int $idShop): int
+    {
+        $path = $this->invalidationPath($idShop);
+        return is_file($path) ? (int) @filemtime($path) : 0;
+    }
+
+    private function invalidationPath(int $idShop): string
+    {
+        return $this->directory . DIRECTORY_SEPARATOR . 'shop-' . $idShop . '.invalidated';
     }
 
     private function path(string $key): string
