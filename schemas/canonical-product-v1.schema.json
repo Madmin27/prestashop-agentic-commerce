@@ -7,6 +7,7 @@
   "required": [
     "schema_version",
     "canonical_variant_id",
+    "category_type",
     "source",
     "context",
     "timestamps",
@@ -22,6 +23,7 @@
     "schema_version": { "const": "1.0" },
     "canonical_variant_id": { "type": "string", "minLength": 1 },
     "product_group_id": { "type": ["string", "null"] },
+    "category_type": { "type": "string", "minLength": 1 },
     "source": {
       "type": "object",
       "additionalProperties": false,
