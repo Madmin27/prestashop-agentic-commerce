@@ -4,6 +4,7 @@ namespace PrestaShopAgenticCommerce\Config;
 
 use PrestaShopAgenticCommerce\Export\OpenAi\OpenAiFeedConfigResolver;
 use PrestaShopAgenticCommerce\Export\OpenAi\OpenAiSftpConfigResolver;
+use PrestaShopAgenticCommerce\Install\OpenAiConfigInstaller;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -14,6 +15,7 @@ final class OpenAiBackOfficeForm
     /** @param array<string,string> $values */
     public function render(\Module $module, array $values): string
     {
+        $values[OpenAiConfigInstaller::CRON_TOKEN] = (string) \Configuration::get(OpenAiConfigInstaller::CRON_TOKEN);
         $helper = new \HelperForm();
         $helper->module = $module;
         $helper->name_controller = $module->name;
@@ -112,6 +114,13 @@ final class OpenAiBackOfficeForm
                     $this->text(OpenAiSftpConfigResolver::HOST_KEY_MD5, $module->trans('SSH host key MD5 fallback', [], 'Modules.Psagenticcommerce.Admin'), false),
                     $this->text(OpenAiSftpConfigResolver::KNOWN_HOSTS_FILE, $module->trans('known_hosts file path', [], 'Modules.Psagenticcommerce.Admin'), false),
                     $this->text(OpenAiSftpConfigResolver::TIMEOUT, $module->trans('Transfer timeout (seconds)', [], 'Modules.Psagenticcommerce.Admin'), false, '60'),
+                    [
+                        'type' => 'text',
+                        'label' => $module->trans('Cron token', [], 'Modules.Psagenticcommerce.Admin'),
+                        'name' => OpenAiConfigInstaller::CRON_TOKEN,
+                        'readonly' => true,
+                        'desc' => $module->trans('Use this only in the X-Agentic-Cron-Token HTTP header. Do not put it in the cron URL.', [], 'Modules.Psagenticcommerce.Admin'),
+                    ],
                 ],
                 'submit' => [
                     'title' => $module->trans('Save settings', [], 'Modules.Psagenticcommerce.Admin'),
@@ -124,13 +133,7 @@ final class OpenAiBackOfficeForm
     /** @return array<string,mixed> */
     private function text(string $name, string $label, bool $required, string $placeholder = ''): array
     {
-        return [
-            'type' => 'text',
-            'label' => $label,
-            'name' => $name,
-            'required' => $required,
-            'placeholder' => $placeholder,
-        ];
+        return ['type' => 'text', 'label' => $label, 'name' => $name, 'required' => $required, 'placeholder' => $placeholder];
     }
 
     /** @return array<string,mixed> */
