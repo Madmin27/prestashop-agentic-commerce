@@ -45,8 +45,8 @@ final class OpenAiBackOfficeForm
                     $this->text(OpenAiFeedConfigResolver::TARGET_COUNTRIES, $module->trans('Target countries', [], 'Modules.Psagenticcommerce.Admin'), true, 'TR,DE,US'),
                     $this->text(OpenAiFeedConfigResolver::STORE_COUNTRY, $module->trans('Store country', [], 'Modules.Psagenticcommerce.Admin'), true, 'TR'),
                     $this->text(OpenAiFeedConfigResolver::DEFAULT_BRAND, $module->trans('Default brand', [], 'Modules.Psagenticcommerce.Admin'), false),
-                    $this->switchField(OpenAiFeedConfigResolver::ELIGIBLE_SEARCH, $module->trans('Eligible for search', [], 'Modules.Psagenticcommerce.Admin')),
-                    $this->switchField(OpenAiFeedConfigResolver::ELIGIBLE_CHECKOUT, $module->trans('Eligible for checkout', [], 'Modules.Psagenticcommerce.Admin')),
+                    $this->switchField($module, OpenAiFeedConfigResolver::ELIGIBLE_SEARCH, $module->trans('Eligible for search', [], 'Modules.Psagenticcommerce.Admin')),
+                    $this->switchField($module, OpenAiFeedConfigResolver::ELIGIBLE_CHECKOUT, $module->trans('Eligible for checkout', [], 'Modules.Psagenticcommerce.Admin')),
                     $this->text(OpenAiFeedConfigResolver::PRIVACY_POLICY_URL, $module->trans('Privacy policy URL', [], 'Modules.Psagenticcommerce.Admin'), false),
                     $this->text(OpenAiFeedConfigResolver::TERMS_URL, $module->trans('Terms URL', [], 'Modules.Psagenticcommerce.Admin'), false),
                     [
@@ -76,7 +76,7 @@ final class OpenAiBackOfficeForm
                 'legend' => ['title' => $module->trans('OpenAI SFTP Delivery', [], 'Modules.Psagenticcommerce.Admin'), 'icon' => 'icon-cloud-upload'],
                 'description' => $module->trans('Enter the SFTP values provided during merchant onboarding. Host-key verification is mandatory.', [], 'Modules.Psagenticcommerce.Admin'),
                 'input' => [
-                    $this->switchField(OpenAiSftpConfigResolver::ENABLED, $module->trans('Enable SFTP delivery', [], 'Modules.Psagenticcommerce.Admin')),
+                    $this->switchField($module, OpenAiSftpConfigResolver::ENABLED, $module->trans('Enable SFTP delivery', [], 'Modules.Psagenticcommerce.Admin')),
                     $this->text(OpenAiSftpConfigResolver::HOST, $module->trans('SFTP host', [], 'Modules.Psagenticcommerce.Admin'), false),
                     $this->text(OpenAiSftpConfigResolver::PORT, $module->trans('SFTP port', [], 'Modules.Psagenticcommerce.Admin'), false, '22'),
                     $this->text(OpenAiSftpConfigResolver::USERNAME, $module->trans('Username', [], 'Modules.Psagenticcommerce.Admin'), false),
@@ -99,7 +99,7 @@ final class OpenAiBackOfficeForm
                         'name' => 'PSAGENTIC_OPENAI_SFTP_SECRET_INPUT',
                         'desc' => $module->trans('Leave blank to keep the currently stored encrypted value.', [], 'Modules.Psagenticcommerce.Admin'),
                     ],
-                    $this->switchField('PSAGENTIC_OPENAI_SFTP_CLEAR_SECRET', $module->trans('Clear stored authentication secret', [], 'Modules.Psagenticcommerce.Admin')),
+                    $this->switchField($module, 'PSAGENTIC_OPENAI_SFTP_CLEAR_SECRET', $module->trans('Clear stored authentication secret', [], 'Modules.Psagenticcommerce.Admin')),
                     $this->text(OpenAiSftpConfigResolver::PRIVATE_KEY_FILE, $module->trans('Private key file path', [], 'Modules.Psagenticcommerce.Admin'), false),
                     $this->text(OpenAiSftpConfigResolver::PUBLIC_KEY_FILE, $module->trans('Public key file path', [], 'Modules.Psagenticcommerce.Admin'), false),
                     [
@@ -108,7 +108,7 @@ final class OpenAiBackOfficeForm
                         'name' => 'PSAGENTIC_OPENAI_SFTP_KEY_SECRET_INPUT',
                         'desc' => $module->trans('Leave blank to keep the currently stored encrypted value.', [], 'Modules.Psagenticcommerce.Admin'),
                     ],
-                    $this->switchField('PSAGENTIC_OPENAI_SFTP_CLEAR_KEY_SECRET', $module->trans('Clear stored key passphrase', [], 'Modules.Psagenticcommerce.Admin')),
+                    $this->switchField($module, 'PSAGENTIC_OPENAI_SFTP_CLEAR_KEY_SECRET', $module->trans('Clear stored key passphrase', [], 'Modules.Psagenticcommerce.Admin')),
                     $this->text(OpenAiSftpConfigResolver::REMOTE_PATH, $module->trans('Remote file path', [], 'Modules.Psagenticcommerce.Admin'), false, 'products.jsonl.gz'),
                     $this->text(OpenAiSftpConfigResolver::HOST_KEY_SHA256, $module->trans('SSH host key SHA256', [], 'Modules.Psagenticcommerce.Admin'), false),
                     $this->text(OpenAiSftpConfigResolver::HOST_KEY_MD5, $module->trans('SSH host key MD5 fallback', [], 'Modules.Psagenticcommerce.Admin'), false),
@@ -137,7 +137,7 @@ final class OpenAiBackOfficeForm
     }
 
     /** @return array<string,mixed> */
-    private function switchField(string $name, string $label): array
+    private function switchField(\Module $module, string $name, string $label): array
     {
         return [
             'type' => 'switch',
@@ -145,8 +145,8 @@ final class OpenAiBackOfficeForm
             'name' => $name,
             'is_bool' => true,
             'values' => [
-                ['id' => $name . '_on', 'value' => 1, 'label' => 'Yes'],
-                ['id' => $name . '_off', 'value' => 0, 'label' => 'No'],
+                ['id' => $name . '_on', 'value' => 1, 'label' => $module->trans('Yes', [], 'Modules.Psagenticcommerce.Admin')],
+                ['id' => $name . '_off', 'value' => 0, 'label' => $module->trans('No', [], 'Modules.Psagenticcommerce.Admin')],
             ],
         ];
     }
