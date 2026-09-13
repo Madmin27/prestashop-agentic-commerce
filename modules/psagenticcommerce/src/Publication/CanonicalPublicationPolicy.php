@@ -46,10 +46,16 @@ final class CanonicalPublicationPolicy
 
         $allowedEvidence = [];
         foreach ($data['verified_specs'] as $key => $value) {
-            $allowedEvidence[$key][] = ['class' => 'verified', 'hash' => CanonicalValueHash::fromValue($value)];
+            $allowedEvidence[$key][] = [
+                'class' => 'verified',
+                'hash' => CanonicalValueHash::fromValue($value),
+            ];
         }
         foreach ($data['declared_specs'] as $key => $value) {
-            $allowedEvidence[$key][] = ['class' => 'declared', 'hash' => CanonicalValueHash::fromValue($value)];
+            $allowedEvidence[$key][] = [
+                'class' => 'declared',
+                'hash' => CanonicalValueHash::fromValue($value),
+            ];
         }
         foreach ($data['derived_properties'] as $key => $property) {
             $allowedEvidence[$key][] = [
@@ -59,8 +65,9 @@ final class CanonicalPublicationPolicy
         }
         foreach (['recommended_for', 'conditionally_suitable_for', 'not_recommended_for'] as $bucket) {
             $evidenceKey = 'suitability.' . $bucket;
+            $classes = $this->suitabilityAllowedClasses($bucket);
             foreach ($data['suitability'][$bucket] as $term) {
-                foreach (['verified', 'declared', 'derived'] as $class) {
+                foreach ($classes as $class) {
                     $allowedEvidence[$evidenceKey][] = [
                         'class' => $class,
                         'hash' => CanonicalValueHash::fromValue($term),
@@ -77,15 +84,17 @@ final class CanonicalPublicationPolicy
             $data['commercial']['realtime_required'] = true;
         }
 
+        // Public discovery exposes an availability state, not exact stock depth.
         $data['commercial']['stock_quantity'] = null;
 
         return $data;
     }
 
     /**
-     * Positive suitability claims require exact-value public provenance.
-     * Conservative exclusions remain publishable as merchant safety policy even
-     * without evidence so missing provenance can never weaken a safety guard.
+     * Positive recommendations require declared or verified provenance.
+     * Derived evidence may support only conditional suitability. Conservative
+     * exclusions remain publishable without evidence so missing provenance can
+     * never weaken a merchant safety guard.
      *
      * @param mixed $suitability
      * @param array<string,array<int,array<string,mixed>>> $evidence
@@ -107,21 +116,23 @@ final class CanonicalPublicationPolicy
             $terms = is_array($suitability[$bucket] ?? null) ? $suitability[$bucket] : [];
             $evidenceKey = 'suitability.' . $bucket;
             $records = is_array($evidence[$evidenceKey] ?? null) ? $evidence[$evidenceKey] : [];
+            $classes = $this->suitabilityAllowedClasses($bucket);
 
             foreach ($terms as $term) {
                 $term = trim((string) $term);
                 if ($term === '') {
                     continue;
                 }
+
                 $expectedHash = CanonicalValueHash::fromValue($term);
-                if ($this->hasAnyPublicEvidence($records, $expectedHash)) {
+                if ($this->hasPublicEvidence($records, $expectedHash, $classes)) {
                     $result[$bucket][] = $term;
                     continue;
                 }
 
                 if ($strict) {
                     throw new \DomainException(sprintf(
-                        'Suitability claim %s:%s has no active public provenance.',
+                        'Suitability claim %s:%s has no acceptable active public provenance.',
                         $bucket,
                         $term
                     ));
@@ -148,20 +159,32 @@ final class CanonicalPublicationPolicy
         return $result;
     }
 
+    /** @return array<int,string> */
+    private function suitabilityAllowedClasses(string $bucket): array
+    {
+        if ($bucket === 'recommended_for') {
+            return ['verified', 'declared'];
+        }
+
+        return ['verified', 'declared', 'derived'];
+    }
+
     /**
      * @param array<int,array<string,mixed>> $records
+     * @param array<int,string> $allowedClasses
      */
-    private function hasAnyPublicEvidence(array $records, string $expectedHash): bool
+    private function hasPublicEvidence(array $records, string $expectedHash, array $allowedClasses): bool
     {
         foreach ($records as $record) {
             if (!is_array($record)
-                || !in_array(($record['evidence_class'] ?? null), ['verified', 'declared', 'derived'], true)
+                || !in_array(($record['evidence_class'] ?? null), $allowedClasses, true)
                 || ($record['status'] ?? null) !== 'active'
                 || ($record['is_public'] ?? false) !== true
                 || !is_string($record['value_hash'] ?? null)
             ) {
                 continue;
             }
+
             if (hash_equals($expectedHash, (string) $record['value_hash'])) {
                 return true;
             }
@@ -207,25 +230,7 @@ final class CanonicalPublicationPolicy
 
             $expectedHash = CanonicalValueHash::fromValue($hashValue);
             $records = is_array($evidence[$propertyKey] ?? null) ? $evidence[$propertyKey] : [];
-            $valid = false;
-
-            foreach ($records as $record) {
-                if (!is_array($record)) {
-                    continue;
-                }
-                if (($record['evidence_class'] ?? null) !== $class
-                    || ($record['status'] ?? null) !== 'active'
-                    || ($record['is_public'] ?? false) !== true
-                    || !is_string($record['value_hash'] ?? null)
-                    || !hash_equals($expectedHash, (string) $record['value_hash'])
-                ) {
-                    continue;
-                }
-                $valid = true;
-                break;
-            }
-
-            if ($valid) {
+            if ($this->hasPublicEvidence($records, $expectedHash, [$class])) {
                 $result[(string) $propertyKey] = $propertyValue;
                 continue;
             }
@@ -239,6 +244,7 @@ final class CanonicalPublicationPolicy
             }
         }
 
+        ksort($result, SORT_STRING);
         return $result;
     }
 
@@ -297,6 +303,27 @@ final class CanonicalPublicationPolicy
         }
 
         ksort($result, SORT_STRING);
+        foreach ($result as &$records) {
+            usort($records, static function (array $left, array $right): int {
+                $leftKey = implode('|', [
+                    (string) ($left['evidence_class'] ?? ''),
+                    (string) ($left['source_type'] ?? ''),
+                    (string) ($left['source_id'] ?? ''),
+                    (string) ($left['evidence_date'] ?? ''),
+                    (string) ($left['value_hash'] ?? ''),
+                ]);
+                $rightKey = implode('|', [
+                    (string) ($right['evidence_class'] ?? ''),
+                    (string) ($right['source_type'] ?? ''),
+                    (string) ($right['source_id'] ?? ''),
+                    (string) ($right['evidence_date'] ?? ''),
+                    (string) ($right['value_hash'] ?? ''),
+                ]);
+                return $leftKey <=> $rightKey;
+            });
+        }
+        unset($records);
+
         return $result;
     }
 }
