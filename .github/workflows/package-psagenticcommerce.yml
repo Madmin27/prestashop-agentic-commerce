@@ -1,0 +1,28 @@
+name: Package psagenticcommerce
+
+on:
+  push:
+    branches:
+      - main
+      - 'agentic-commerce-*'
+    paths:
+      - 'modules/psagenticcommerce/**'
+      - 'scripts/build-psagenticcommerce.sh'
+      - '.github/workflows/package-psagenticcommerce.yml'
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build installable module ZIP
+        run: bash scripts/build-psagenticcommerce.sh
+      - name: Verify ZIP root
+        run: |
+          unzip -l dist/psagenticcommerce.zip | grep -q 'psagenticcommerce/psagenticcommerce.php'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: psagenticcommerce-prestashop-module
+          path: dist/psagenticcommerce.zip
+          if-no-files-found: error
