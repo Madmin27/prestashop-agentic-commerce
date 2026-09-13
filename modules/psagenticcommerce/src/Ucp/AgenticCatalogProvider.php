@@ -33,26 +33,54 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
     public function search(array $params): CatalogSearchResult
     {
         $query = trim((string) ($params['query'] ?? ''));
+        $filters = is_array($params['filters'] ?? null) ? $params['filters'] : [];
         $limit = min(max((int) ($params['limit'] ?? 10), 1), 50);
-        $offset = max((int) ($params['offset'] ?? 0), 0);
+        $scanOffset = max((int) ($params['offset'] ?? 0), 0);
 
-        $page = $this->source->searchProductIds($this->context, $query, $limit, $offset);
         $products = [];
-        foreach ($page['ids'] as $idProduct) {
-            $product = $this->buildProduct((int) $idProduct, null);
-            if ($product !== null) {
-                $products[] = $product;
+        $totalUnderlying = 0;
+        $hasNext = false;
+        $nextOffset = null;
+
+        while (true) {
+            $page = $this->source->searchProductIds($this->context, $query, 50, $scanOffset);
+            $totalUnderlying = (int) $page['total'];
+            if ($page['ids'] === []) {
+                break;
+            }
+
+            foreach ($page['ids'] as $idProduct) {
+                $candidateOffset = $scanOffset;
+                ++$scanOffset;
+
+                $product = $this->buildProduct((int) $idProduct, null);
+                if ($product === null || !$this->matchesFilters($product, $filters)) {
+                    continue;
+                }
+
+                if (count($products) < $limit) {
+                    $products[] = $product;
+                    continue;
+                }
+
+                $hasNext = true;
+                $nextOffset = $candidateOffset;
+                break 2;
+            }
+
+            if (!(bool) $page['has_next']) {
+                break;
             }
         }
 
-        $cursor = $page['has_next']
-            ? $this->cursor((int) $page['next_offset'])
+        $cursor = $hasNext && $nextOffset !== null
+            ? $this->cursor($nextOffset)
             : null;
 
         return new CatalogSearchResult(
             $products,
-            (int) $page['total'],
-            (bool) $page['has_next'],
+            $filters === [] ? $totalUnderlying : null,
+            $hasNext,
             $cursor
         );
     }
@@ -113,6 +141,48 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
         }
 
         return $dtos === [] ? null : $this->adapter->product($dtos);
+    }
+
+    /** @param array<string,mixed> $product @param array<string,mixed> $filters */
+    private function matchesFilters(array $product, array $filters): bool
+    {
+        $categories = is_array($filters['categories'] ?? null) ? $filters['categories'] : [];
+        if ($categories !== []) {
+            $wanted = array_values(array_unique(array_map('strval', $categories)));
+            $actual = [];
+            foreach ($product['categories'] ?? [] as $category) {
+                if (is_array($category) && isset($category['value'])) {
+                    $actual[] = (string) $category['value'];
+                }
+            }
+            if (array_intersect($wanted, $actual) === []) {
+                return false;
+            }
+        }
+
+        $price = is_array($filters['price'] ?? null) ? $filters['price'] : [];
+        if ($price !== []) {
+            $min = isset($price['min']) && is_numeric($price['min']) ? (int) $price['min'] : null;
+            $max = isset($price['max']) && is_numeric($price['max']) ? (int) $price['max'] : null;
+            $matches = false;
+            foreach ($product['variants'] ?? [] as $variant) {
+                $amount = is_array($variant) && isset($variant['price']['amount'])
+                    ? (int) $variant['price']['amount']
+                    : null;
+                if ($amount === null) {
+                    continue;
+                }
+                if (($min === null || $amount >= $min) && ($max === null || $amount <= $max)) {
+                    $matches = true;
+                    break;
+                }
+            }
+            if (!$matches) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function cursor(int $offset): string
