@@ -76,6 +76,9 @@ final class CurlSftpClient
             }
 
             $sha256 = trim((string) $config->get('host_key_sha256', ''));
+            if (str_starts_with($sha256, 'SHA256:')) {
+                $sha256 = substr($sha256, 7);
+            }
             $md5 = strtolower(trim((string) $config->get('host_key_md5', '')));
             $knownHosts = trim((string) $config->get('known_hosts_file', ''));
             if ($sha256 !== '') {
@@ -87,7 +90,11 @@ final class CurlSftpClient
                 if (!defined('CURLOPT_SSH_HOST_PUBLIC_KEY_MD5')) {
                     throw new \RuntimeException('MD5 SSH host-key pinning is unavailable in this cURL build.');
                 }
-                $options[CURLOPT_SSH_HOST_PUBLIC_KEY_MD5] = preg_replace('/[^0-9a-f]/', '', $md5);
+                $normalizedMd5 = preg_replace('/[^0-9a-f]/', '', $md5) ?? '';
+                if (strlen($normalizedMd5) !== 32) {
+                    throw new \RuntimeException('Invalid SSH host-key MD5 fingerprint.');
+                }
+                $options[CURLOPT_SSH_HOST_PUBLIC_KEY_MD5] = $normalizedMd5;
             } elseif ($knownHosts !== '') {
                 if (!defined('CURLOPT_SSH_KNOWNHOSTS')) {
                     throw new \RuntimeException('known_hosts verification is unavailable in this cURL build.');
