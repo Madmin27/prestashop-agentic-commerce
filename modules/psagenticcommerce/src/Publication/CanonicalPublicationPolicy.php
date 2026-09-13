@@ -11,25 +11,13 @@ if (!defined('_PS_VERSION_')) {
 
 final class CanonicalPublicationPolicy
 {
-    /**
-     * Prepare a safe public representation. Unsupported properties are omitted
-     * rather than allowing one bad evidence row to suppress the whole product.
-     * Potentially personalized prices and exact stock quantities are redacted.
-     *
-     * @return array<string,mixed>
-     */
+    /** @return array<string,mixed> */
     public function prepare(CanonicalProductDTO $dto): array
     {
         return $this->prepareInternal($dto, false);
     }
 
-    /**
-     * Same rules as prepare(), but throws if a technical property cannot be
-     * proven by an active public evidence row bound to its exact value.
-     * Intended for CI, validation and feed-quality checks.
-     *
-     * @return array<string,mixed>
-     */
+    /** @return array<string,mixed> */
     public function prepareStrict(CanonicalProductDTO $dto): array
     {
         return $this->prepareInternal($dto, true);
@@ -70,13 +58,15 @@ final class CanonicalPublicationPolicy
         ), true);
         $data['evidence'] = $this->publicEvidence($evidence, $allowedKeys);
 
-        if (($data['context']['pricing_context'] ?? null) !== 'public_catalog_tax_included') {
+        if (($data['context']['pricing_context'] ?? null) !== 'public_catalog_tax_included'
+            || ($data['commercial']['show_price'] ?? false) !== true
+        ) {
             $data['commercial']['price'] = null;
             $data['commercial']['realtime_required'] = true;
         }
 
-        // Exact stock can be commercially sensitive. Public surfaces should use
-        // availability by default; an exporter may opt into exact stock later.
+        // Exact stock can be commercially sensitive. Public surfaces expose the
+        // availability state by default; exporters may add an opt-in policy later.
         $data['commercial']['stock_quantity'] = null;
 
         return $data;
@@ -95,9 +85,28 @@ final class CanonicalPublicationPolicy
 
         $result = [];
         foreach ($specs as $propertyKey => $propertyValue) {
-            $hashValue = $derived && is_array($propertyValue) && array_key_exists('value', $propertyValue)
-                ? $propertyValue['value']
-                : $propertyValue;
+            if ($propertyValue === null) {
+                continue;
+            }
+
+            if ($derived) {
+                if (!$this->isValidDerivedProperty($propertyValue)) {
+                    if ($strict) {
+                        throw new \DomainException(sprintf(
+                            'Derived property %s has an invalid structure.',
+                            (string) $propertyKey
+                        ));
+                    }
+                    continue;
+                }
+                $hashValue = $propertyValue['value'];
+                if ($hashValue === null) {
+                    continue;
+                }
+            } else {
+                $hashValue = $propertyValue;
+            }
+
             $expectedHash = CanonicalValueHash::fromValue($hashValue);
             $records = is_array($evidence[$propertyKey] ?? null) ? $evidence[$propertyKey] : [];
             $valid = false;
@@ -133,6 +142,23 @@ final class CanonicalPublicationPolicy
         }
 
         return $result;
+    }
+
+    private function isValidDerivedProperty($property): bool
+    {
+        if (!is_array($property)
+            || !array_key_exists('value', $property)
+            || !is_string($property['method'] ?? null)
+            || trim((string) $property['method']) === ''
+            || !is_string($property['rule_version'] ?? null)
+            || trim((string) $property['rule_version']) === ''
+            || !is_numeric($property['confidence'] ?? null)
+        ) {
+            return false;
+        }
+
+        $confidence = (float) $property['confidence'];
+        return $confidence >= 0.0 && $confidence <= 1.0;
     }
 
     /**
