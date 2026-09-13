@@ -34,6 +34,15 @@ final class CanonicalBuilder
             $context->country->iso_code ?? \Country::getIsoById($idCountry)
         ));
 
+        $shopProductActive = \Db::getInstance()->getValue(
+            'SELECT ps.`active` FROM `' . _DB_PREFIX_ . 'product_shop` ps'
+            . ' WHERE ps.`id_shop` = ' . $idShop
+            . ' AND ps.`id_product` = ' . $idProduct
+        );
+        if ($shopProductActive === false || (int) $shopProductActive !== 1) {
+            throw new \RuntimeException('Product is not available in the current shop context.');
+        }
+
         $product = new \Product($idProduct, false, $idLang, $idShop);
         if (!\Validate::isLoadedObject($product) || !$product->active) {
             throw new \RuntimeException('Product is not available in the current shop context.');
