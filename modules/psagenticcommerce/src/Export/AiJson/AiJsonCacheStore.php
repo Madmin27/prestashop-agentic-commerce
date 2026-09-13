@@ -18,44 +18,42 @@ final class AiJsonCacheStore
 
     public function get(string $key, int $ttl): ?string
     {
-        return $this->getForShop($key, $ttl, 0);
+        return $this->readBody($key, $ttl);
     }
 
     public function getForShop(string $key, int $ttl, int $idShop): ?string
     {
-        $path = $this->path($key);
-        if (!is_file($path)) {
+        $body = $this->readBody($key, $ttl);
+        if ($body === null) {
+            return null;
+        }
+        if ($idShop < 1) {
+            return $body;
+        }
+
+        $entryGeneration = @file_get_contents($this->generationSidecar($key));
+        if (!is_string($entryGeneration)
+            || trim($entryGeneration) !== $this->shopGeneration($idShop)
+        ) {
             return null;
         }
 
-        $mtime = (int) @filemtime($path);
-        if ($ttl >= 0 && (time() - $mtime) > $ttl) {
-            return null;
-        }
-
-        if ($idShop > 0 && $this->invalidatedAt($idShop) > $mtime) {
-            return null;
-        }
-
-        $body = @file_get_contents($path);
-        return $body === false ? null : $body;
+        return $body;
     }
 
     public function put(string $key, string $body): void
     {
-        if (!is_dir($this->directory) && !@mkdir($this->directory, 0775, true) && !is_dir($this->directory)) {
-            throw new \RuntimeException('Could not create AI JSON cache directory.');
+        $this->atomicWrite($this->path($key), $body);
+    }
+
+    public function putForShop(string $key, string $body, int $idShop): void
+    {
+        if ($idShop < 1) {
+            throw new \InvalidArgumentException('Shop id must be positive.');
         }
 
-        $path = $this->path($key);
-        $tmp = $path . '.' . bin2hex(random_bytes(6)) . '.tmp';
-        if (@file_put_contents($tmp, $body, LOCK_EX) === false) {
-            throw new \RuntimeException('Could not write AI JSON cache file.');
-        }
-        if (!@rename($tmp, $path)) {
-            @unlink($tmp);
-            throw new \RuntimeException('Could not atomically publish AI JSON cache file.');
-        }
+        $this->atomicWrite($this->path($key), $body);
+        $this->atomicWrite($this->generationSidecar($key), $this->shopGeneration($idShop));
     }
 
     public function invalidateShop(int $idShop): void
@@ -64,35 +62,75 @@ final class AiJsonCacheStore
             return;
         }
 
-        if (!is_dir($this->directory) && !@mkdir($this->directory, 0775, true) && !is_dir($this->directory)) {
-            throw new \RuntimeException('Could not create AI JSON cache directory.');
-        }
-
-        $marker = $this->invalidationPath($idShop);
-        @touch($marker, time());
+        $this->atomicWrite(
+            $this->shopGenerationPath($idShop),
+            bin2hex(random_bytes(16))
+        );
     }
 
     public function delete(string $key): void
     {
-        $path = $this->path($key);
-        if (is_file($path)) {
-            @unlink($path);
+        foreach ([$this->path($key), $this->generationSidecar($key)] as $path) {
+            if (is_file($path)) {
+                @unlink($path);
+            }
         }
     }
 
-    private function invalidatedAt(int $idShop): int
+    private function readBody(string $key, int $ttl): ?string
     {
-        $path = $this->invalidationPath($idShop);
-        return is_file($path) ? (int) @filemtime($path) : 0;
+        $path = $this->path($key);
+        if (!is_file($path)) {
+            return null;
+        }
+        if ($ttl >= 0 && (time() - (int) @filemtime($path)) > $ttl) {
+            return null;
+        }
+
+        $body = @file_get_contents($path);
+        return $body === false ? null : $body;
     }
 
-    private function invalidationPath(int $idShop): string
+    private function shopGeneration(int $idShop): string
     {
-        return $this->directory . DIRECTORY_SEPARATOR . 'shop-' . $idShop . '.invalidated';
+        $path = $this->shopGenerationPath($idShop);
+        if (!is_file($path)) {
+            return '0';
+        }
+
+        $generation = @file_get_contents($path);
+        return is_string($generation) && trim($generation) !== '' ? trim($generation) : '0';
+    }
+
+    private function shopGenerationPath(int $idShop): string
+    {
+        return $this->directory . DIRECTORY_SEPARATOR . 'shop-' . $idShop . '.generation';
+    }
+
+    private function generationSidecar(string $key): string
+    {
+        return $this->path($key) . '.generation';
     }
 
     private function path(string $key): string
     {
         return $this->directory . DIRECTORY_SEPARATOR . hash('sha256', $key) . '.json';
+    }
+
+    private function atomicWrite(string $path, string $contents): void
+    {
+        if (!is_dir($this->directory) && !@mkdir($this->directory, 0775, true) && !is_dir($this->directory)) {
+            throw new \RuntimeException('Could not create AI JSON cache directory.');
+        }
+
+        $tmp = $path . '.' . bin2hex(random_bytes(6)) . '.tmp';
+        if (@file_put_contents($tmp, $contents, LOCK_EX) === false) {
+            @unlink($tmp);
+            throw new \RuntimeException('Could not write AI JSON cache file.');
+        }
+        if (!@rename($tmp, $path)) {
+            @unlink($tmp);
+            throw new \RuntimeException('Could not atomically publish AI JSON cache file.');
+        }
     }
 }
