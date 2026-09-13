@@ -30,33 +30,29 @@ final class CanonicalPublicationPolicy
         $evidence = is_array($data['evidence'] ?? null) ? $data['evidence'] : [];
 
         $data['verified_specs'] = $this->filterSpecs(
-            $data['verified_specs'] ?? [],
-            $evidence,
-            'verified',
-            $strict,
-            false
+            $data['verified_specs'] ?? [], $evidence, 'verified', $strict, false
         );
         $data['declared_specs'] = $this->filterSpecs(
-            $data['declared_specs'] ?? [],
-            $evidence,
-            'declared',
-            $strict,
-            false
+            $data['declared_specs'] ?? [], $evidence, 'declared', $strict, false
         );
         $data['derived_properties'] = $this->filterSpecs(
-            $data['derived_properties'] ?? [],
-            $evidence,
-            'derived',
-            $strict,
-            true
+            $data['derived_properties'] ?? [], $evidence, 'derived', $strict, true
         );
 
-        $allowedKeys = array_fill_keys(array_merge(
-            array_keys($data['verified_specs']),
-            array_keys($data['declared_specs']),
-            array_keys($data['derived_properties'])
-        ), true);
-        $data['evidence'] = $this->publicEvidence($evidence, $allowedKeys);
+        $allowedEvidence = [];
+        foreach ($data['verified_specs'] as $key => $value) {
+            $allowedEvidence[$key][] = ['class' => 'verified', 'hash' => CanonicalValueHash::fromValue($value)];
+        }
+        foreach ($data['declared_specs'] as $key => $value) {
+            $allowedEvidence[$key][] = ['class' => 'declared', 'hash' => CanonicalValueHash::fromValue($value)];
+        }
+        foreach ($data['derived_properties'] as $key => $property) {
+            $allowedEvidence[$key][] = [
+                'class' => 'derived',
+                'hash' => CanonicalValueHash::fromValue($property['value']),
+            ];
+        }
+        $data['evidence'] = $this->publicEvidence($evidence, $allowedEvidence);
 
         if (($data['context']['pricing_context'] ?? null) !== 'public_catalog_tax_included'
             || ($data['commercial']['show_price'] ?? false) !== true
@@ -65,8 +61,6 @@ final class CanonicalPublicationPolicy
             $data['commercial']['realtime_required'] = true;
         }
 
-        // Exact stock can be commercially sensitive. Public surfaces expose the
-        // availability state by default; exporters may add an opt-in policy later.
         $data['commercial']['stock_quantity'] = null;
 
         return $data;
@@ -163,28 +157,42 @@ final class CanonicalPublicationPolicy
 
     /**
      * @param array<string,array<int,array<string,mixed>>> $evidence
-     * @param array<string,bool> $allowedKeys
+     * @param array<string,array<int,array{class:string,hash:string}>> $allowedEvidence
      * @return array<string,array<int,array<string,mixed>>>
      */
-    private function publicEvidence(array $evidence, array $allowedKeys): array
+    private function publicEvidence(array $evidence, array $allowedEvidence): array
     {
         $result = [];
-        foreach ($evidence as $key => $records) {
-            if (!isset($allowedKeys[$key]) || !is_array($records)) {
-                continue;
-            }
+        foreach ($allowedEvidence as $key => $allowed) {
+            $records = is_array($evidence[$key] ?? null) ? $evidence[$key] : [];
             foreach ($records as $record) {
                 if (!is_array($record)
                     || ($record['status'] ?? null) !== 'active'
                     || ($record['is_public'] ?? false) !== true
+                    || !is_string($record['value_hash'] ?? null)
                 ) {
                     continue;
                 }
+
+                $matches = false;
+                foreach ($allowed as $expected) {
+                    if (($record['evidence_class'] ?? null) === $expected['class']
+                        && hash_equals($expected['hash'], (string) $record['value_hash'])
+                    ) {
+                        $matches = true;
+                        break;
+                    }
+                }
+                if (!$matches) {
+                    continue;
+                }
+
                 unset($record['notes']);
                 $result[$key][] = $record;
             }
         }
 
+        ksort($result, SORT_STRING);
         return $result;
     }
 }
