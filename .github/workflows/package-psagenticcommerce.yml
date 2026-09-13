@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - 'agentic-commerce-*'
     paths:
       - 'modules/psagenticcommerce/**'
       - 'scripts/build-psagenticcommerce.sh'
