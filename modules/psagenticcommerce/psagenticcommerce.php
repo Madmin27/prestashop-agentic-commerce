@@ -20,16 +20,18 @@ use PrestaShopAgenticCommerce\Repository\AiMetaRepository;
 use PrestaShopAgenticCommerce\Repository\EvidenceRepository;
 use PrestaShopAgenticCommerce\Repository\ProductVariantRepository;
 use PrestaShopAgenticCommerce\Support\AiJsonInvalidationHooks;
+use PrestaShopAgenticCommerce\Support\UcpCatalogProviderHook;
 
 final class PsAgenticCommerce extends Module
 {
     use AiJsonInvalidationHooks;
+    use UcpCatalogProviderHook;
 
     public function __construct()
     {
         $this->name = 'psagenticcommerce';
         $this->tab = 'others';
-        $this->version = '0.3.0';
+        $this->version = '0.4.0';
         $this->author = 'PrestaShop Agentic Commerce Contributors';
         $this->need_instance = 0;
         $this->bootstrap = true;
