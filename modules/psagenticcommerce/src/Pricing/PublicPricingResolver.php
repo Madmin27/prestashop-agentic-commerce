@@ -11,7 +11,8 @@ final class PublicPricingResolver
     /** @return array{id_country:int,country:string,country_object:\Country} */
     public function publicCountry(\Context $context): array
     {
-        $idCountry = (int) \Configuration::get('PS_COUNTRY_DEFAULT');
+        $idShop = (int) ($context->shop->id ?? 0);
+        $idCountry = (int) \Configuration::get('PS_COUNTRY_DEFAULT', null, null, $idShop > 0 ? $idShop : null);
         $publicCountry = new \Country($idCountry, (int) ($context->language->id ?? 0));
         if (!\Validate::isLoadedObject($publicCountry)) {
             throw new \RuntimeException('Default shop country is not available for public pricing.');
@@ -49,9 +50,6 @@ final class PublicPricingResolver
             : null;
 
         try {
-            // Force deterministic anonymous/public catalog semantics. The tax
-            // jurisdiction is the shop's configured default country rather than
-            // whichever visitor happened to trigger an export.
             $context->customer = new \Customer();
             $context->cart = new \Cart();
             $context->country = $public['country_object'];
@@ -84,9 +82,6 @@ final class PublicPricingResolver
             $context->cart = $originalCart;
             $context->country = $originalCountry;
             \Product::$_taxCalculationMethod = $originalTaxCalculationMethod;
-
-            // Reinitialize static pricing state for the original customer after
-            // restoring request context so later calculations are not anonymous.
             \Product::initPricesComputation($originalCustomerId);
         }
     }
