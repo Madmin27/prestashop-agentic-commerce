@@ -2,6 +2,8 @@
 
 namespace PrestaShopAgenticCommerce\Repository;
 
+use PrestaShopAgenticCommerce\Validation\JsonPayloadValidator;
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -65,24 +67,23 @@ final class AiMetaRepository
             return null;
         }
 
-        $row['verified_specs'] = $this->decode($row['verified_specs_json'] ?? null);
-        $row['declared_specs'] = $this->decode($row['declared_specs_json'] ?? null);
-        $row['derived_specs'] = $this->decode($row['derived_specs_json'] ?? null);
-        $row['suitability'] = $this->decode($row['suitability_json'] ?? null);
+        $row['verified_specs'] = $this->decodeObject($row['verified_specs_json'] ?? null);
+        $row['declared_specs'] = $this->decodeObject($row['declared_specs_json'] ?? null);
+        $row['derived_specs'] = $this->decodeObject($row['derived_specs_json'] ?? null);
+        $row['suitability'] = $this->decodeObject($row['suitability_json'] ?? null);
         $row['_has_suitability'] = $this->hasJson($row['suitability_json'] ?? null);
 
         return $row;
     }
 
     /** @return array<string,mixed> */
-    private function decode($value): array
+    private function decodeObject($value): array
     {
         if (!$this->hasJson($value)) {
             return [];
         }
 
-        $decoded = json_decode((string) $value, true);
-        return is_array($decoded) ? $decoded : [];
+        return JsonPayloadValidator::decodeObjectNullable((string) $value) ?? [];
     }
 
     private function hasJson($value): bool
