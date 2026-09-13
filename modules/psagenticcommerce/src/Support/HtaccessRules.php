@@ -17,6 +17,8 @@ final class HtaccessRules
             . "<IfModule mod_rewrite.c>\n"
             . "RewriteEngine On\n"
             . "RewriteRule ^\\.well-known/ai-catalog\\.json$ index.php?fc=module&module=psagenticcommerce&controller=discovery [QSA,L]\n"
+            . "RewriteRule ^ai/v1/s([1-9][0-9]*)/([^/]+)/([A-Za-z]{3})/([A-Za-z]{2})/catalog\\.json$ index.php?fc=module&module=psagenticcommerce&controller=ai&ai_resource=catalog&id_shop=$1&locale=$2&currency=$3&country=$4 [QSA,L]\n"
+            . "RewriteRule ^ai/v1/s([1-9][0-9]*)/([^/]+)/([A-Za-z]{3})/([A-Za-z]{2})/products/(ps-[0-9]+-[0-9]+-[0-9]+)\\.json$ index.php?fc=module&module=psagenticcommerce&controller=ai&ai_resource=product&id_shop=$1&locale=$2&currency=$3&country=$4&canonical_variant_id=$5 [QSA,L]\n"
             . "</IfModule>\n"
             . self::MARKER . " end\n";
     }
@@ -28,17 +30,14 @@ final class HtaccessRules
 
     public static function apply(string $htaccess): string
     {
-        if (self::contains($htaccess)) {
-            return $htaccess;
-        }
-
+        $withoutOldBlock = self::remove($htaccess);
         $block = self::block();
-        $pos = strpos($htaccess, self::PS_MARKER);
+        $pos = strpos($withoutOldBlock, self::PS_MARKER);
         if ($pos === false) {
-            return $htaccess === '' ? $block : $block . "\n" . $htaccess;
+            return $withoutOldBlock === '' ? $block : $block . "\n" . $withoutOldBlock;
         }
 
-        return substr($htaccess, 0, $pos) . $block . "\n" . substr($htaccess, $pos);
+        return substr($withoutOldBlock, 0, $pos) . $block . "\n" . substr($withoutOldBlock, $pos);
     }
 
     public static function remove(string $htaccess): string
