@@ -6,14 +6,15 @@ final class CanonicalValueHash
 {
     /**
      * Stable SHA-256 over a recursively canonicalized JSON representation.
-     * Associative-object keys are sorted; list order is preserved.
+     * Associative-object keys are sorted; list order is preserved. Integral
+     * floats normalize to integers so 8 and 8.0 represent the same fact.
      */
     public static function fromValue($value): string
     {
         $normalized = self::normalize($value);
         $json = json_encode(
             $normalized,
-            JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
         );
 
         return hash('sha256', $json);
@@ -21,6 +22,10 @@ final class CanonicalValueHash
 
     private static function normalize($value)
     {
+        if (is_float($value) && is_finite($value) && floor($value) === $value) {
+            return (int) $value;
+        }
+
         if (!is_array($value)) {
             return $value;
         }
