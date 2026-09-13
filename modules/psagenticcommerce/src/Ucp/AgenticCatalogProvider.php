@@ -13,21 +13,12 @@ if (!defined('_PS_VERSION_')) {
 
 final class AgenticCatalogProvider implements CatalogProviderInterface
 {
-    private \Context $context;
-    private PublicCanonicalProductProviderInterface $productProvider;
-    private UcpCatalogAdapter $adapter;
-    private UcpCatalogSource $source;
-
     public function __construct(
-        \Context $context,
-        PublicCanonicalProductProviderInterface $productProvider,
-        UcpCatalogAdapter $adapter,
-        UcpCatalogSource $source
+        private \Context $context,
+        private PublicCanonicalProductProviderInterface $productProvider,
+        private UcpCatalogAdapter $adapter,
+        private UcpCatalogSource $source
     ) {
-        $this->context = $context;
-        $this->productProvider = $productProvider;
-        $this->adapter = $adapter;
-        $this->source = $source;
     }
 
     public function search(array $params): CatalogSearchResult
@@ -36,7 +27,6 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
         $filters = is_array($params['filters'] ?? null) ? $params['filters'] : [];
         $limit = min(max((int) ($params['limit'] ?? 10), 1), 50);
         $scanOffset = max((int) ($params['offset'] ?? 0), 0);
-
         $products = [];
         $totalUnderlying = 0;
         $hasNext = false;
@@ -50,19 +40,18 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
             }
 
             foreach ($page['ids'] as $idProduct) {
-                $candidateOffset = $scanOffset;
-                ++$scanOffset;
-
-                $product = $this->buildProduct((int) $idProduct, null);
-                if ($product === null || !$this->matchesFilters($product, $filters)) {
+                $candidateOffset = $scanOffset++;
+                $product = $this->filterProduct(
+                    $this->buildProduct((int) $idProduct, null),
+                    $filters
+                );
+                if ($product === null) {
                     continue;
                 }
-
                 if (count($products) < $limit) {
                     $products[] = $product;
                     continue;
                 }
-
                 $hasNext = true;
                 $nextOffset = $candidateOffset;
                 break 2;
@@ -73,43 +62,47 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
             }
         }
 
-        $cursor = $hasNext && $nextOffset !== null
-            ? $this->cursor($nextOffset)
-            : null;
-
         return new CatalogSearchResult(
             $products,
             $filters === [] ? $totalUnderlying : null,
             $hasNext,
-            $cursor
+            $hasNext && $nextOffset !== null ? $this->cursor($nextOffset) : null
         );
     }
 
-    public function lookup(array $ids): CatalogLookupResult
+    public function lookup(array $ids, array $params = []): CatalogLookupResult
     {
+        $filters = is_array($params['filters'] ?? null) ? $params['filters'] : [];
         $requests = $this->source->parseLookupIds($ids, (int) $this->context->shop->id);
-        $products = [];
-        $seen = [];
+        $merged = [];
 
         foreach ($requests as $request) {
-            $key = $request['id_product'] . ':' . ($request['id_product_attribute'] ?? '*');
-            if (isset($seen[$key])) {
+            $product = $this->filterProduct(
+                $this->buildProduct(
+                    (int) $request['id_product'],
+                    $request['id_product_attribute'] === null
+                        ? null
+                        : (int) $request['id_product_attribute']
+                ),
+                $filters
+            );
+            if ($product === null) {
                 continue;
             }
-            $seen[$key] = true;
 
-            $product = $this->buildProduct(
-                (int) $request['id_product'],
-                $request['id_product_attribute'] === null
-                    ? null
-                    : (int) $request['id_product_attribute']
-            );
-            if ($product !== null) {
-                $products[] = $product;
+            $input = [
+                'id' => (string) $request['input_id'],
+                'match' => (string) $request['match'],
+            ];
+            foreach ($product['variants'] as &$variant) {
+                $variant['inputs'] = [$input];
             }
+            unset($variant);
+            $this->mergeLookupProduct($merged, $product);
         }
 
-        return new CatalogLookupResult($products);
+        ksort($merged, SORT_STRING);
+        return new CatalogLookupResult(array_values($merged));
     }
 
     /** @return array<string,mixed>|null */
@@ -119,18 +112,15 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
         if ($shopVariantIds === []) {
             return null;
         }
-
         if ($onlyAttribute !== null) {
             if (!in_array($onlyAttribute, $shopVariantIds, true)) {
                 return null;
             }
-            $variantIds = [$onlyAttribute];
-        } else {
-            $variantIds = $shopVariantIds;
+            $shopVariantIds = [$onlyAttribute];
         }
 
         $dtos = [];
-        foreach ($variantIds as $idProductAttribute) {
+        foreach ($shopVariantIds as $idProductAttribute) {
             try {
                 $dtos[] = $this->productProvider->build(
                     $idProduct,
@@ -149,9 +139,13 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
         return $dtos === [] ? null : $this->adapter->product($dtos);
     }
 
-    /** @param array<string,mixed> $product @param array<string,mixed> $filters */
-    private function matchesFilters(array $product, array $filters): bool
+    /** @param array<string,mixed>|null $product @param array<string,mixed> $filters */
+    private function filterProduct(?array $product, array $filters): ?array
     {
+        if ($product === null) {
+            return null;
+        }
+
         $categories = is_array($filters['categories'] ?? null) ? $filters['categories'] : [];
         if ($categories !== []) {
             $wanted = array_values(array_unique(array_map('strval', $categories)));
@@ -162,7 +156,7 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
                 }
             }
             if (array_intersect($wanted, $actual) === []) {
-                return false;
+                return null;
             }
         }
 
@@ -170,25 +164,67 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
         if ($price !== []) {
             $min = isset($price['min']) && is_numeric($price['min']) ? (int) $price['min'] : null;
             $max = isset($price['max']) && is_numeric($price['max']) ? (int) $price['max'] : null;
-            $matches = false;
+            $variants = [];
             foreach ($product['variants'] ?? [] as $variant) {
                 $amount = is_array($variant) && isset($variant['price']['amount'])
                     ? (int) $variant['price']['amount']
                     : null;
-                if ($amount === null) {
-                    continue;
-                }
-                if (($min === null || $amount >= $min) && ($max === null || $amount <= $max)) {
-                    $matches = true;
-                    break;
+                if ($amount !== null
+                    && ($min === null || $amount >= $min)
+                    && ($max === null || $amount <= $max)
+                ) {
+                    $variants[] = $variant;
                 }
             }
-            if (!$matches) {
-                return false;
+            if ($variants === []) {
+                return null;
             }
+            $product['variants'] = $variants;
+            $amounts = array_map(
+                static fn(array $variant): int => (int) $variant['price']['amount'],
+                $variants
+            );
+            $currency = (string) $variants[0]['price']['currency'];
+            $product['price_range'] = [
+                'min' => ['amount' => min($amounts), 'currency' => $currency],
+                'max' => ['amount' => max($amounts), 'currency' => $currency],
+            ];
         }
 
-        return true;
+        return $product;
+    }
+
+    /** @param array<string,array<string,mixed>> $merged @param array<string,mixed> $product */
+    private function mergeLookupProduct(array &$merged, array $product): void
+    {
+        $productId = (string) $product['id'];
+        if (!isset($merged[$productId])) {
+            $merged[$productId] = $product;
+            return;
+        }
+
+        $variantMap = [];
+        foreach ($merged[$productId]['variants'] as $variant) {
+            $variantMap[(string) $variant['id']] = $variant;
+        }
+        foreach ($product['variants'] as $variant) {
+            $variantId = (string) $variant['id'];
+            if (!isset($variantMap[$variantId])) {
+                $variantMap[$variantId] = $variant;
+                continue;
+            }
+            $inputs = array_merge(
+                $variantMap[$variantId]['inputs'] ?? [],
+                $variant['inputs'] ?? []
+            );
+            $unique = [];
+            foreach ($inputs as $input) {
+                $unique[(string) $input['id'] . '|' . (string) ($input['match'] ?? '')] = $input;
+            }
+            $variantMap[$variantId]['inputs'] = array_values($unique);
+        }
+        ksort($variantMap, SORT_STRING);
+        $merged[$productId]['variants'] = array_values($variantMap);
     }
 
     private function cursor(int $offset): string
