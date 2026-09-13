@@ -4,10 +4,9 @@ on:
   push:
     branches:
       - main
-      - 'agentic-commerce-*'
-      - 'catalog-provider-*'
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
