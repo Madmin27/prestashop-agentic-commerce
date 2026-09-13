@@ -9,9 +9,6 @@ if (!defined('_PS_VERSION_')) {
 final class RepresentationResolver
 {
     /**
-     * Resolve a representation requested in the URL and apply it to Context.
-     * The caller must restore the returned original objects in a finally block.
-     *
      * @return array{representation:RepresentationKey,original_language:mixed,original_currency:mixed,original_country:mixed}
      */
     public function apply(
@@ -29,27 +26,25 @@ final class RepresentationResolver
         $currencyIso = strtoupper(trim($currencyIso));
         $countryIso = strtoupper(trim($countryIso));
 
-        $languageRow = \Db::getInstance()->getRow(
-            'SELECT l.id_lang, l.iso_code, l.locale FROM `' . _DB_PREFIX_ . 'lang` l '
-            . 'INNER JOIN `' . _DB_PREFIX_ . 'lang_shop` ls ON ls.id_lang = l.id_lang '
-            . 'WHERE ls.id_shop = ' . (int) $idShop . ' AND l.active = 1 '
-            . "AND REPLACE(l.locale, '_', '-') = '" . pSQL($locale) . "'"
-        );
-        if (!$languageRow) {
+        $languageRow = null;
+        foreach (\Language::getLanguages(true, $idShop, false) as $row) {
+            $candidate = str_replace('_', '-', (string) ($row['locale'] ?? ''));
+            if (strcasecmp($candidate, $locale) === 0) {
+                $languageRow = $row;
+                break;
+            }
+        }
+        if ($languageRow === null) {
             throw new \RuntimeException('Requested locale is not active for this shop.');
         }
 
-        $currencyRow = \Db::getInstance()->getRow(
-            'SELECT c.id_currency, c.iso_code FROM `' . _DB_PREFIX_ . 'currency` c '
-            . 'INNER JOIN `' . _DB_PREFIX_ . 'currency_shop` cs ON cs.id_currency = c.id_currency '
-            . 'WHERE cs.id_shop = ' . (int) $idShop . ' AND c.active = 1 '
-            . "AND c.iso_code = '" . pSQL($currencyIso) . "'"
-        );
-        if (!$currencyRow) {
+        $idCurrency = (int) \Currency::getIdByIsoCode($currencyIso, $idShop);
+        $currency = new \Currency($idCurrency);
+        if ($idCurrency < 1 || !\Validate::isLoadedObject($currency) || !(bool) $currency->active) {
             throw new \RuntimeException('Requested currency is not active for this shop.');
         }
 
-        $idCountry = (int) \Configuration::get('PS_COUNTRY_DEFAULT');
+        $idCountry = (int) \Configuration::get('PS_COUNTRY_DEFAULT', null, null, $idShop);
         $country = new \Country($idCountry, (int) $languageRow['id_lang']);
         if (!\Validate::isLoadedObject($country)
             || strtoupper((string) $country->iso_code) !== $countryIso
@@ -58,9 +53,8 @@ final class RepresentationResolver
         }
 
         $language = new \Language((int) $languageRow['id_lang']);
-        $currency = new \Currency((int) $currencyRow['id_currency']);
-        if (!\Validate::isLoadedObject($language) || !\Validate::isLoadedObject($currency)) {
-            throw new \RuntimeException('Requested representation objects could not be loaded.');
+        if (!\Validate::isLoadedObject($language)) {
+            throw new \RuntimeException('Requested language could not be loaded.');
         }
 
         $originalLanguage = $context->language;
