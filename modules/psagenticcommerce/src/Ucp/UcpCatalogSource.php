@@ -28,7 +28,11 @@ final class UcpCatalogSource
                     continue;
                 }
                 $product = new \Product($idProduct, false, $idLang, $idShop);
-                if (\Validate::isLoadedObject($product) && $product->active && $product->visibility !== 'none') {
+                if (\Validate::isLoadedObject($product)
+                    && $product->active
+                    && $product->visibility !== 'none'
+                    && $product->show_price
+                ) {
                     $ids[$idProduct] = $idProduct;
                 }
             }
@@ -43,7 +47,19 @@ final class UcpCatalogSource
             ];
         }
 
-        $rows = \Product::getProducts($idLang, $offset, $limit, 'id_product', 'ASC', false, true, $context) ?: [];
+        $where = 'ps.`id_shop` = ' . $idShop
+            . ' AND ps.`active` = 1'
+            . " AND ps.`visibility` <> 'none'"
+            . ' AND ps.`show_price` = 1';
+
+        $total = (int) \Db::getInstance()->getValue(
+            'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'product_shop` ps WHERE ' . $where
+        );
+        $rows = \Db::getInstance()->executeS(
+            'SELECT ps.`id_product` FROM `' . _DB_PREFIX_ . 'product_shop` ps WHERE ' . $where
+            . ' ORDER BY ps.`id_product` ASC LIMIT ' . $offset . ',' . $limit
+        ) ?: [];
+
         $ids = [];
         foreach ($rows as $row) {
             $idProduct = (int) ($row['id_product'] ?? 0);
@@ -51,11 +67,6 @@ final class UcpCatalogSource
                 $ids[] = $idProduct;
             }
         }
-
-        $total = (int) \Db::getInstance()->getValue(
-            'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'product_shop` WHERE `id_shop` = ' . $idShop
-            . " AND `active` = 1 AND `visibility` <> 'none'"
-        );
 
         return [
             'ids' => $ids,
@@ -68,26 +79,27 @@ final class UcpCatalogSource
     /** @return array<int,int> */
     public function variantIds(\Context $context, int $idProduct): array
     {
-        $idLang = (int) $context->language->id;
         $idShop = (int) $context->shop->id;
-        $product = new \Product($idProduct, false, $idLang, $idShop);
-        if (!\Validate::isLoadedObject($product) || !$product->active || $product->visibility === 'none') {
+        if ($idProduct < 1 || $idShop < 1) {
             return [];
         }
 
+        $rows = \Db::getInstance()->executeS(
+            'SELECT pas.`id_product_attribute` FROM `' . _DB_PREFIX_ . 'product_attribute_shop` pas'
+            . ' WHERE pas.`id_shop` = ' . $idShop
+            . ' AND pas.`id_product` = ' . $idProduct
+            . ' ORDER BY pas.`id_product_attribute` ASC'
+        ) ?: [];
+
         $ids = [];
-        foreach ($product->getAttributeCombinations($idLang) ?: [] as $row) {
+        foreach ($rows as $row) {
             $id = (int) ($row['id_product_attribute'] ?? 0);
             if ($id > 0) {
-                $ids[$id] = $id;
+                $ids[] = $id;
             }
         }
 
-        if ($ids === []) {
-            return [0];
-        }
-        ksort($ids, SORT_NUMERIC);
-        return array_values($ids);
+        return $ids === [] ? [0] : array_values(array_unique($ids));
     }
 
     /**
