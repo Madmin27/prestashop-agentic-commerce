@@ -1,15 +1,17 @@
 # PrestaShop Agentic Commerce
 
-`psagenticcommerce` is a merchant-neutral canonical product and AI commerce module for PrestaShop.
+`psagenticcommerce` is a merchant-neutral canonical product and AI commerce module for PrestaShop 8+ / PHP 8+.
 
 It intentionally contains no store name, brand, vertical taxonomy or product-specific suitability rule. Each merchant installs the module and supplies its own metadata, technical specification keys, evidence, taxonomy and suitability vocabulary.
 
 ## Core responsibilities
 
 - multistore-safe product and variant identity
-- canonical product DTO
+- explicit language and currency representation context
+- product-level metadata inheritance with variant overrides
 - verified / declared / derived specification tiers
-- evidence provenance and publication controls
+- evidence provenance bound to exact values with `value_hash`
+- public/private evidence and publication controls
 - merchant-defined sale units and category types
 - future AI JSON, OpenAI and UCP adapters
 
@@ -17,9 +19,13 @@ It intentionally contains no store name, brand, vertical taxonomy or product-spe
 
 The module uses the current PrestaShop DB prefix:
 
-- `{prefix}agentic_product_meta`
-- `{prefix}agentic_evidence`
+- `{prefix}agenticcommerce_product_meta`
+- `{prefix}agenticcommerce_evidence`
 
-JSON payloads use LONGTEXT for MySQL/MariaDB compatibility and are validated at application level.
+JSON payloads use LONGTEXT for MySQL/MariaDB portability and are validated at application level. Malformed metadata fails closed.
 
-Uninstall preserves merchant metadata/evidence; destructive purge must be explicit.
+Public exporters must use `CanonicalPublicationPolicy`: unproven technical values are omitted, non-public price contexts are redacted, exact stock quantity is hidden by default, and private evidence/notes are not exposed.
+
+`fdpsucp` contains the generic catalog-provider extension point, but the canonical-to-UCP adapter/provider remains a separate implementation task.
+
+Uninstall preserves merchant metadata/evidence; destructive purge must be explicit. Install/upgrade migrates earlier development table names when present.
