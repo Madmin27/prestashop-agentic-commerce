@@ -14,9 +14,9 @@ It contains no store name, brand, vertical taxonomy or product-specific suitabil
 - deterministic anonymous/public catalog pricing
 - publication-policy redaction and suitability provenance controls
 - representation-aware AI JSON product/catalog/manifest delivery
-- generic extension points for OpenAI and UCP adapters
+- canonical UCP catalog search/lookup provider
 
-Marketing descriptions remain non-authoritative content. Technical facts are published only from explicit specification fields that satisfy evidence policy.
+Marketing descriptions are non-authoritative content. Technical facts are published only from explicit specification fields that satisfy evidence policy.
 
 ## AI JSON endpoints
 
@@ -34,6 +34,25 @@ A representation is isolated by:
 `shop + language/locale + currency + tax-country`
 
 The requested shop ID must match the shop selected by the request host. Locale and currency must be active for that shop, and the country must match the shop's configured public tax country.
+
+## UCP catalog provider
+
+When `fdpsucp` is installed, `psagenticcommerce` registers a catalog provider through `actionUcpCollectCatalogProviders`. The canonical layer remains independent of UCP; only the adapter/provider layer maps public canonical products to UCP.
+
+The provider currently targets UCP catalog semantics dated `2026-08-25`:
+
+- canonical product groups become UCP products
+- canonical variants become UCP variants
+- prices are ISO-4217 minor-unit integers
+- availability is structured
+- variant descriptions, GTIN barcodes and selected options are mapped
+- `sale_unit` maps to UCP `quantity_unit` where applicable
+- merchant `category_type` is exposed as a merchant taxonomy category
+- search supports category and minor-unit price filters
+- pagination uses opaque cursors
+- lookup accepts canonical product IDs, canonical variant IDs and legacy numeric product IDs
+
+This does **not** claim that the entire bundled `fdpsucp` transactional stack is UCP `2026-08-25` conformant. Its cart/checkout implementation still carries older protocol-version debt and is intentionally tracked separately. Without the canonical provider, the existing `fdpsucp` catalog fallback keeps its legacy response version.
 
 ## HTTP and cache behavior
 
@@ -62,6 +81,4 @@ The module contains PHPUnit tests plus a dependency-free smoke test:
 php tests/smoke.php
 ```
 
-Coverage includes canonical identity/value hashing, provenance filtering, suitability policy, public pricing state restoration, AI representation isolation, cache generation invalidation, rewrite idempotency and ETag matching.
-
-`fdpsucp` contains the generic catalog-provider extension point. Canonical-to-UCP mapping remains a separate protocol adapter task.
+Coverage includes canonical identity/value hashing, provenance filtering, suitability policy, public pricing state restoration, AI representation isolation, cache generation invalidation, rewrite idempotency, ETag matching and UCP catalog mapping contracts.
