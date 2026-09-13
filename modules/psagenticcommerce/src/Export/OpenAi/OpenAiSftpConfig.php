@@ -22,6 +22,10 @@ final class OpenAiSftpConfig
         if (!in_array((string) ($values['auth_mode'] ?? 'secret'), ['secret', 'public_key'], true)) {
             throw new \InvalidArgumentException('Invalid SFTP authentication mode.');
         }
+        $host = trim((string) ($values['host'] ?? ''));
+        if ($host !== '' && ($host !== parse_url('sftp://' . $host, PHP_URL_HOST) || preg_match('/[\s\/@?#]/', $host))) {
+            throw new \InvalidArgumentException('SFTP host must be a hostname or IP address without scheme, path or credentials.');
+        }
     }
 
     /** @return mixed */
