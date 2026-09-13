@@ -33,6 +33,20 @@ jobs:
         working-directory: modules/${{ matrix.module }}
         run: vendor/bin/phpunit --testdox
 
+  smoke:
+    name: AI JSON smoke — PHP 8.0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          coverage: none
+      - name: Run dependency-free smoke test
+        working-directory: modules/psagenticcommerce
+        run: php tests/smoke.php
+
   lint:
     name: PHP ${{ matrix.php }} Syntax Check
     runs-on: ubuntu-latest
