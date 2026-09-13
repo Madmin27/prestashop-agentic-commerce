@@ -1,11 +1,6 @@
 <?php
-
 namespace Hepsiantep\Ai\Install;
-
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
-
+if (!defined('_PS_VERSION_')) { exit; }
 final class DatabaseInstaller
 {
     public function install(): bool
@@ -13,7 +8,6 @@ final class DatabaseInstaller
         $engine = _MYSQL_ENGINE_;
         $metaTable = _DB_PREFIX_ . 'hepsiantep_ai_product_meta';
         $evidenceTable = _DB_PREFIX_ . 'hepsiantep_ai_evidence';
-
         $metaSql = "CREATE TABLE IF NOT EXISTS `$metaTable` (
             `id_ai_meta` INT UNSIGNED NOT NULL AUTO_INCREMENT,
             `id_shop` INT UNSIGNED NOT NULL,
@@ -21,8 +15,10 @@ final class DatabaseInstaller
             `id_product_attribute` INT UNSIGNED NOT NULL DEFAULT 0,
             `category_type` VARCHAR(64) NOT NULL DEFAULT 'general',
             `sale_unit` VARCHAR(32) NOT NULL DEFAULT 'piece',
-            `suitability_json` LONGTEXT NULL,
+            `verified_specs_json` LONGTEXT NULL,
+            `declared_specs_json` LONGTEXT NULL,
             `derived_specs_json` LONGTEXT NULL,
+            `suitability_json` LONGTEXT NULL,
             `source_updated_at` DATETIME NULL,
             `updated_at` DATETIME NOT NULL,
             PRIMARY KEY (`id_ai_meta`),
@@ -30,7 +26,6 @@ final class DatabaseInstaller
             KEY `idx_product` (`id_product`, `id_product_attribute`),
             KEY `idx_shop` (`id_shop`)
         ) ENGINE=$engine DEFAULT CHARSET=utf8mb4;";
-
         $evidenceSql = "CREATE TABLE IF NOT EXISTS `$evidenceTable` (
             `id_evidence` INT UNSIGNED NOT NULL AUTO_INCREMENT,
             `id_shop` INT UNSIGNED NOT NULL,
@@ -53,13 +48,7 @@ final class DatabaseInstaller
             KEY `idx_class_search` (`evidence_class`, `source_type`),
             KEY `idx_public_status` (`is_public`, `status`)
         ) ENGINE=$engine DEFAULT CHARSET=utf8mb4;";
-
-        return \Db::getInstance()->execute($metaSql)
-            && \Db::getInstance()->execute($evidenceSql);
+        return \Db::getInstance()->execute($metaSql) && \Db::getInstance()->execute($evidenceSql);
     }
-
-    public function uninstall(): bool
-    {
-        return true;
-    }
+    public function uninstall(): bool { return true; }
 }
