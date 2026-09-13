@@ -18,18 +18,32 @@ final class PublicPricingResolver
             throw new \InvalidArgumentException('Invalid public pricing request.');
         }
 
+        $idCountry = (int) \Configuration::get('PS_COUNTRY_DEFAULT');
+        $publicCountry = new \Country($idCountry, (int) ($context->language->id ?? 0));
+        if (!\Validate::isLoadedObject($publicCountry)) {
+            throw new \RuntimeException('Default shop country is not available for public pricing.');
+        }
+
+        $countryIso = strtoupper((string) $publicCountry->iso_code);
+        if (!preg_match('/^[A-Z]{2}$/', $countryIso)) {
+            throw new \RuntimeException('Default shop country has an invalid ISO code.');
+        }
+
         $originalCustomer = $context->customer;
         $originalCart = $context->cart;
+        $originalCountry = $context->country ?? null;
         $originalTaxCalculationMethod = \Product::$_taxCalculationMethod;
         $originalCustomerId = \Validate::isLoadedObject($originalCustomer)
             ? (int) $originalCustomer->id
             : null;
 
         try {
-            // Force anonymous catalog semantics. Group::getCurrent() resolves to
-            // PS_UNIDENTIFIED_GROUP when the current customer is not loaded.
+            // Force deterministic anonymous/public catalog semantics. The tax
+            // jurisdiction is the shop's configured default country rather than
+            // whichever visitor happened to trigger an export.
             $context->customer = new \Customer();
             $context->cart = new \Cart();
+            $context->country = $publicCountry;
             \Product::$_taxCalculationMethod = null;
             \Product::initPricesComputation(null);
 
@@ -50,15 +64,18 @@ final class PublicPricingResolver
             return new PublicPriceResult(
                 $price,
                 strtoupper((string) $context->currency->iso_code),
+                $idCountry,
+                $countryIso,
                 gmdate('c')
             );
         } finally {
             $context->customer = $originalCustomer;
             $context->cart = $originalCart;
+            $context->country = $originalCountry;
             \Product::$_taxCalculationMethod = $originalTaxCalculationMethod;
 
-            // Reinitialize the static pricing state for the original customer.
-            // This avoids leaving the request in anonymous-group pricing mode.
+            // Reinitialize static pricing state for the original customer after
+            // restoring request context so later calculations are not anonymous.
             \Product::initPricesComputation($originalCustomerId);
         }
     }
