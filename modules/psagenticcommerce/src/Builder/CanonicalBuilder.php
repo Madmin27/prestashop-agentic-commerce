@@ -45,6 +45,16 @@ final class CanonicalBuilder
             if (!\Validate::isLoadedObject($combination) || (int) $combination->id_product !== $idProduct) {
                 throw new \InvalidArgumentException('Combination does not belong to product.');
             }
+
+            $assignedToShop = (bool) \Db::getInstance()->getValue(
+                'SELECT 1 FROM `' . _DB_PREFIX_ . 'product_attribute_shop`'
+                . ' WHERE `id_shop` = ' . $idShop
+                . ' AND `id_product` = ' . $idProduct
+                . ' AND `id_product_attribute` = ' . $idProductAttribute
+            );
+            if (!$assignedToShop) {
+                throw new \InvalidArgumentException('Combination is not available in the current shop context.');
+            }
         }
 
         $meta = $this->metaRepository->find($idShop, $idProduct, $idProductAttribute) ?? [];
