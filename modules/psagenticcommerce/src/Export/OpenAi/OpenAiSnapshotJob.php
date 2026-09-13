@@ -35,6 +35,12 @@ final class OpenAiSnapshotJob
         );
         $snapshot = $coordinator->build($idShop, $context);
 
+        if ($snapshot->exportedCount() === 0 && count($snapshot->skipped()) > 0) {
+            throw new \RuntimeException(
+                'OpenAI snapshot contains no valid rows; existing snapshot was not replaced.'
+            );
+        }
+
         if (!is_dir($targetDirectory) && !@mkdir($targetDirectory, 0750, true) && !is_dir($targetDirectory)) {
             throw new \RuntimeException('Unable to create OpenAI snapshot directory.');
         }
