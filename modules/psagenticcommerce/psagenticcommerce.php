@@ -6,7 +6,12 @@ if (!defined('_PS_VERSION_')) {
 
 require_once __DIR__ . '/src/autoload.php';
 
+use PrestaShopAgenticCommerce\Builder\CanonicalBuilder;
+use PrestaShopAgenticCommerce\Builder\PublicCanonicalBuilder;
 use PrestaShopAgenticCommerce\Install\DatabaseInstaller;
+use PrestaShopAgenticCommerce\Pricing\PublicPricingResolver;
+use PrestaShopAgenticCommerce\Repository\AiMetaRepository;
+use PrestaShopAgenticCommerce\Repository\EvidenceRepository;
 
 final class PsAgenticCommerce extends Module
 {
@@ -51,5 +56,21 @@ final class PsAgenticCommerce extends Module
     public function uninstall(): bool
     {
         return (new DatabaseInstaller())->uninstall() && parent::uninstall();
+    }
+
+    public function createCanonicalBuilder(): CanonicalBuilder
+    {
+        return new CanonicalBuilder(
+            new AiMetaRepository(),
+            new EvidenceRepository()
+        );
+    }
+
+    public function createPublicCanonicalBuilder(): PublicCanonicalBuilder
+    {
+        return new PublicCanonicalBuilder(
+            $this->createCanonicalBuilder(),
+            new PublicPricingResolver()
+        );
     }
 }
