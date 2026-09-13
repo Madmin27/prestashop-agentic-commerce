@@ -24,7 +24,9 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
     public function search(array $params): CatalogSearchResult
     {
         $query = trim((string) ($params['query'] ?? ''));
-        $filters = is_array($params['filters'] ?? null) ? $params['filters'] : [];
+        $rawFilters = is_array($params['filters'] ?? null) ? $params['filters'] : [];
+        $requestContext = is_array($params['context'] ?? null) ? $params['context'] : [];
+        [$filters, $messages] = $this->prepareFilters($rawFilters, $requestContext);
         $limit = min(max((int) ($params['limit'] ?? 10), 1), 50);
         $scanOffset = max((int) ($params['offset'] ?? 0), 0);
         $products = [];
@@ -66,13 +68,16 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
             $products,
             $filters === [] ? $totalUnderlying : null,
             $hasNext,
-            $hasNext && $nextOffset !== null ? $this->cursor($nextOffset) : null
+            $hasNext && $nextOffset !== null ? $this->cursor($nextOffset) : null,
+            $messages
         );
     }
 
     public function lookup(array $ids, array $params = []): CatalogLookupResult
     {
-        $filters = is_array($params['filters'] ?? null) ? $params['filters'] : [];
+        $rawFilters = is_array($params['filters'] ?? null) ? $params['filters'] : [];
+        $requestContext = is_array($params['context'] ?? null) ? $params['context'] : [];
+        [$filters, $messages] = $this->prepareFilters($rawFilters, $requestContext);
         $requests = $this->source->parseLookupIds($ids, (int) $this->context->shop->id);
         $merged = [];
 
@@ -102,7 +107,56 @@ final class AgenticCatalogProvider implements CatalogProviderInterface
         }
 
         ksort($merged, SORT_STRING);
-        return new CatalogLookupResult(array_values($merged));
+        return new CatalogLookupResult(array_values($merged), $messages);
+    }
+
+    /**
+     * @param array<string,mixed> $filters
+     * @param array<string,mixed> $requestContext
+     * @return array{0:array<string,mixed>,1:array<int,array<string,mixed>>}
+     */
+    private function prepareFilters(array $filters, array $requestContext): array
+    {
+        $messages = [];
+        if (!is_array($filters['price'] ?? null) || $filters['price'] === []) {
+            return [$filters, $messages];
+        }
+
+        $presentmentCurrency = strtoupper((string) ($this->context->currency->iso_code ?? ''));
+        $requestedCurrency = strtoupper(trim((string) ($requestContext['currency'] ?? '')));
+
+        if ($requestedCurrency === '') {
+            unset($filters['price']);
+            $messages[] = $this->warning(
+                'price_filter_currency_missing',
+                'Price filter was ignored because context.currency was not provided.'
+            );
+            return [$filters, $messages];
+        }
+
+        if ($presentmentCurrency === '' || $requestedCurrency !== $presentmentCurrency) {
+            unset($filters['price']);
+            $messages[] = $this->warning(
+                'price_filter_currency_mismatch',
+                'Price filter was ignored because requested currency ' . $requestedCurrency
+                . ' differs from presentment currency ' . ($presentmentCurrency !== '' ? $presentmentCurrency : 'unknown')
+                . ' and currency conversion is not supported.'
+            );
+        }
+
+        return [$filters, $messages];
+    }
+
+    /** @return array<string,mixed> */
+    private function warning(string $code, string $content): array
+    {
+        return [
+            'type' => 'warning',
+            'code' => $code,
+            'content' => $content,
+            'content_type' => 'plain',
+            'path' => '$.filters.price',
+        ];
     }
 
     /** @return array<string,mixed>|null */
