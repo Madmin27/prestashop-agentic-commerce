@@ -32,7 +32,8 @@ final class EvidenceRepository
                     ? 'id_product_attribute IN (0,' . (int) $idProductAttribute . ')'
                     : 'id_product_attribute = 0'
             )
-            ->where("status = 'active'");
+            ->where("status = 'active'")
+            ->orderBy('property_key ASC, evidence_class ASC, source_type ASC, id_evidence ASC');
 
         if ($publicOnly) {
             $query->where('is_public = 1');
@@ -61,6 +62,7 @@ final class EvidenceRepository
             ];
         }
 
+        ksort($result, SORT_STRING);
         return $result;
     }
 
