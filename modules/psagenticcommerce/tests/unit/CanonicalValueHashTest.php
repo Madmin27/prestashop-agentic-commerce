@@ -16,6 +16,14 @@ final class CanonicalValueHashTest extends TestCase
         );
     }
 
+    public function testIntegralFloatAndIntegerAreEquivalent(): void
+    {
+        self::assertSame(
+            CanonicalValueHash::fromValue(8),
+            CanonicalValueHash::fromValue(8.0)
+        );
+    }
+
     public function testListOrderChangesHash(): void
     {
         self::assertNotSame(
