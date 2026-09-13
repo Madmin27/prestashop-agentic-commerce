@@ -8,12 +8,14 @@ require_once __DIR__ . '/src/autoload.php';
 
 use PrestaShopAgenticCommerce\Builder\CanonicalBuilder;
 use PrestaShopAgenticCommerce\Builder\PublicCanonicalBuilder;
+use PrestaShopAgenticCommerce\Export\AiJson\AiJsonExportCoordinator;
 use PrestaShopAgenticCommerce\Export\AiJson\AiJsonExporter;
 use PrestaShopAgenticCommerce\Install\DatabaseInstaller;
 use PrestaShopAgenticCommerce\Pricing\PublicPricingResolver;
 use PrestaShopAgenticCommerce\Publication\CanonicalPublicationPolicy;
 use PrestaShopAgenticCommerce\Repository\AiMetaRepository;
 use PrestaShopAgenticCommerce\Repository\EvidenceRepository;
+use PrestaShopAgenticCommerce\Repository\ProductVariantRepository;
 
 final class PsAgenticCommerce extends Module
 {
@@ -79,5 +81,14 @@ final class PsAgenticCommerce extends Module
     public function createAiJsonExporter(): AiJsonExporter
     {
         return new AiJsonExporter(new CanonicalPublicationPolicy());
+    }
+
+    public function createAiJsonExportCoordinator(): AiJsonExportCoordinator
+    {
+        return new AiJsonExportCoordinator(
+            new ProductVariantRepository(),
+            $this->createPublicCanonicalBuilder(),
+            $this->createAiJsonExporter()
+        );
     }
 }
