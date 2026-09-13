@@ -8,16 +8,9 @@ if (!defined('_PS_VERSION_')) {
 
 final class PublicPricingResolver
 {
-    public function resolve(
-        int $idProduct,
-        int $idProductAttribute,
-        float $quantity,
-        \Context $context
-    ): PublicPriceResult {
-        if ($idProduct < 1 || $idProductAttribute < 0 || $quantity <= 0) {
-            throw new \InvalidArgumentException('Invalid public pricing request.');
-        }
-
+    /** @return array{id_country:int,country:string,country_object:\Country} */
+    public function publicCountry(\Context $context): array
+    {
         $idCountry = (int) \Configuration::get('PS_COUNTRY_DEFAULT');
         $publicCountry = new \Country($idCountry, (int) ($context->language->id ?? 0));
         if (!\Validate::isLoadedObject($publicCountry)) {
@@ -29,6 +22,24 @@ final class PublicPricingResolver
             throw new \RuntimeException('Default shop country has an invalid ISO code.');
         }
 
+        return [
+            'id_country' => $idCountry,
+            'country' => $countryIso,
+            'country_object' => $publicCountry,
+        ];
+    }
+
+    public function resolve(
+        int $idProduct,
+        int $idProductAttribute,
+        float $quantity,
+        \Context $context
+    ): PublicPriceResult {
+        if ($idProduct < 1 || $idProductAttribute < 0 || $quantity <= 0) {
+            throw new \InvalidArgumentException('Invalid public pricing request.');
+        }
+
+        $public = $this->publicCountry($context);
         $originalCustomer = $context->customer;
         $originalCart = $context->cart;
         $originalCountry = $context->country ?? null;
@@ -43,7 +54,7 @@ final class PublicPricingResolver
             // whichever visitor happened to trigger an export.
             $context->customer = new \Customer();
             $context->cart = new \Cart();
-            $context->country = $publicCountry;
+            $context->country = $public['country_object'];
             \Product::$_taxCalculationMethod = null;
             \Product::initPricesComputation(null);
 
@@ -64,8 +75,8 @@ final class PublicPricingResolver
             return new PublicPriceResult(
                 $price,
                 strtoupper((string) $context->currency->iso_code),
-                $idCountry,
-                $countryIso,
+                $public['id_country'],
+                $public['country'],
                 gmdate('c')
             );
         } finally {
