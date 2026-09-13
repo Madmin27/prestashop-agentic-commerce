@@ -19,9 +19,9 @@ final class PsAgenticCommerceDiscoveryModuleFrontController extends ModuleFrontC
         try {
             $context = Context::getContext();
             $idShop = (int) $context->shop->id;
-            $idLang = (int) Configuration::get('PS_LANG_DEFAULT');
-            $idCurrency = (int) Configuration::get('PS_CURRENCY_DEFAULT');
-            $idCountry = (int) Configuration::get('PS_COUNTRY_DEFAULT');
+            $idLang = (int) Configuration::get('PS_LANG_DEFAULT', null, null, $idShop);
+            $idCurrency = (int) Configuration::get('PS_CURRENCY_DEFAULT', null, null, $idShop);
+            $idCountry = (int) Configuration::get('PS_COUNTRY_DEFAULT', null, null, $idShop);
 
             $language = new Language($idLang);
             $currency = new Currency($idCurrency);
@@ -48,7 +48,7 @@ final class PsAgenticCommerceDiscoveryModuleFrontController extends ModuleFrontC
             $exporter = $module->createAiJsonExporter();
             $cache = $module->createAiJsonCacheStore();
             $cacheKey = $representation->catalogCacheKey() . ':manifest';
-            $body = $cache->get($cacheKey, 300);
+            $body = $cache->getForShop($cacheKey, 300, $idShop);
 
             if ($body === null) {
                 $ucp = Module::isEnabled('fdpsucp')
