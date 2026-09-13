@@ -34,13 +34,8 @@ final class CatalogService
         $provider = CatalogProviderRegistry::collect()->getProvider();
         if ($provider !== null) {
             if ($query === '' && $filters === []) {
-                return UcpError::response(
-                    'invalid_search',
-                    'catalog search requires query or filters',
-                    400
-                );
+                return UcpError::response('invalid_search', 'catalog search requires query or filters', 400);
             }
-
             $result = $provider->search([
                 'query' => $query,
                 'filters' => $filters,
@@ -66,11 +61,14 @@ final class CatalogService
         if (!is_array($ids) || $ids === []) {
             return UcpError::response('missing_ids', 'ids array is required', 400);
         }
-        $ids = array_slice($ids, 0, 50);
+        $ids = array_slice(array_values(array_map('strval', $ids)), 0, 50);
 
         $provider = CatalogProviderRegistry::collect()->getProvider();
         if ($provider !== null) {
-            $result = $provider->lookup($ids);
+            $result = $provider->lookup($ids, [
+                'filters' => is_array($body['filters'] ?? null) ? $body['filters'] : [],
+                'context' => is_array($body['context'] ?? null) ? $body['context'] : [],
+            ]);
             return $this->lookupResponse($result->products, CatalogProtocol::VERSION);
         }
 
@@ -97,8 +95,8 @@ final class CatalogService
         } else {
             $rows = \Product::getProducts($idLang, $offset, $limit, 'date_add', 'DESC', false, true) ?: [];
             $total = (int) \Db::getInstance()->getValue(
-                'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'product_shop` WHERE `id_shop` = ' .
-                (int) $this->context->shop->id . ' AND `active` = 1'
+                'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'product_shop` WHERE `id_shop` = '
+                . (int) $this->context->shop->id . ' AND `active` = 1'
             );
             foreach ($rows as $row) {
                 $product = new \Product((int) $row['id_product'], false, $idLang);
@@ -126,6 +124,9 @@ final class CatalogService
         $products = [];
 
         foreach ($ids as $id) {
+            if (!ctype_digit((string) $id)) {
+                continue;
+            }
             $product = new \Product((int) $id, false, $idLang);
             if (\Validate::isLoadedObject($product) && $product->active) {
                 $products[] = Formatter::product($product, $idLang, $currencyIso, $link);
