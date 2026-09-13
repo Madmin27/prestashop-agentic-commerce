@@ -22,9 +22,14 @@ final class CatalogService
         $filters = is_array($body['filters'] ?? null) ? $body['filters'] : [];
         $pagination = is_array($body['pagination'] ?? null) ? $body['pagination'] : [];
         $limit = min(max((int) ($pagination['limit'] ?? $body['limit'] ?? 10), 1), 50);
-        $offset = isset($pagination['cursor'])
-            ? $this->decodeCursor((string) $pagination['cursor'])
-            : max((int) ($body['offset'] ?? 0), 0);
+
+        try {
+            $offset = isset($pagination['cursor'])
+                ? $this->decodeCursor((string) $pagination['cursor'])
+                : max((int) ($body['offset'] ?? 0), 0);
+        } catch (\InvalidArgumentException $e) {
+            return UcpError::response('invalid_cursor', 'Invalid catalog pagination cursor', 400);
+        }
 
         $provider = CatalogProviderRegistry::collect()->getProvider();
         if ($provider !== null) {
