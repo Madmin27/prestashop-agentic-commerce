@@ -31,7 +31,10 @@ final class PublicCanonicalBuilder implements PublicCanonicalProductProviderInte
         $context = $context ?: \Context::getContext();
         $runtime = $this->canonicalBuilder->build($idProduct, $idProductAttribute, $context);
         $data = $runtime->toArray();
+        $publicCountry = $this->pricingResolver->publicCountry($context);
 
+        $data['context']['id_country'] = $publicCountry['id_country'];
+        $data['context']['country'] = $publicCountry['country'];
         $data['context']['pricing_context'] = 'public_catalog_tax_included';
         $data['commercial']['realtime_required'] = true;
 
