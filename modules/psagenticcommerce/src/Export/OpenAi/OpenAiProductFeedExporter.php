@@ -36,6 +36,13 @@ final class OpenAiProductFeedExporter
             throw new \InvalidArgumentException('OpenAI feed requires an ISO 4217 currency.');
         }
 
+        $availability = (string) ($commercial['availability'] ?? 'unknown');
+        if ($availability === 'preorder') {
+            throw new \InvalidArgumentException(
+                'OpenAI pre_order rows require availability_date; canonical availability dates are not supported yet.'
+            );
+        }
+
         $title = $this->requiredText((string) ($identity['title'] ?? ''), 'title', 150);
         $description = trim((string) ($content['description'] ?? ''));
         if ($description === '') {
@@ -61,7 +68,7 @@ final class OpenAiProductFeedExporter
             'brand' => $brand,
             'image_url' => $imageUrl,
             'price' => $this->formatPrice($price, $currency),
-            'availability' => $this->availability((string) ($commercial['availability'] ?? 'unknown')),
+            'availability' => $this->availability($availability),
             'seller_name' => $this->config->sellerName(),
             'seller_url' => $this->config->sellerUrl(),
             'return_policy' => $this->config->returnPolicyUrl(),
@@ -147,7 +154,6 @@ final class OpenAiProductFeedExporter
         return match ($value) {
             'in_stock' => 'in_stock',
             'out_of_stock' => 'out_of_stock',
-            'preorder' => 'pre_order',
             'backorder' => 'backorder',
             default => 'unknown',
         };
