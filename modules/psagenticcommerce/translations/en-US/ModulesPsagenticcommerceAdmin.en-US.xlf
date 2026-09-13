@@ -58,6 +58,7 @@
       <trans-unit id="admin.054" approved="yes"><source>Save settings</source><target xml:lang="en-US" state="translated">Save settings</target></trans-unit>
       <trans-unit id="admin.055" approved="yes"><source>Yes</source><target xml:lang="en-US" state="translated">Yes</target></trans-unit>
       <trans-unit id="admin.056" approved="yes"><source>No</source><target xml:lang="en-US" state="translated">No</target></trans-unit>
+      <trans-unit id="admin.057" approved="yes"><source>Uploaded snapshot to configured OpenAI SFTP destination.</source><target xml:lang="en-US" state="translated">Uploaded snapshot to configured OpenAI SFTP destination.</target></trans-unit>
     </body>
   </file>
 </xliff>
