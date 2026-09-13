@@ -20,6 +20,7 @@ final class AiJsonHookInstaller
         'actionObjectSpecificPriceAddAfter',
         'actionObjectSpecificPriceUpdateAfter',
         'actionObjectSpecificPriceDeleteAfter',
+        'actionUcpCollectCatalogProviders',
     ];
 
     public static function install(\Module $module): bool
