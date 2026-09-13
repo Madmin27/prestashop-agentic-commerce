@@ -61,7 +61,7 @@ final class PsAgenticCommerceDiscoveryModuleFrontController extends ModuleFrontC
                     $ucp
                 );
                 $body = $exporter->encode($document);
-                $cache->put($cacheKey, $body);
+                $cache->putForShop($cacheKey, $body, $idShop);
             }
 
             JsonResponse::send($body, 300);
