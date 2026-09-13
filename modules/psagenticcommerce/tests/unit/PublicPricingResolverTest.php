@@ -7,17 +7,34 @@ if (!class_exists('Customer')) {
     class Customer
     {
         public $id;
-
-        public function __construct(int $id = 0)
-        {
-            $this->id = $id;
-        }
+        public function __construct(int $id = 0) { $this->id = $id; }
     }
 }
 
 if (!class_exists('Cart')) {
-    class Cart
+    class Cart {}
+}
+
+if (!class_exists('Country')) {
+    class Country
     {
+        public $id;
+        public $iso_code;
+        public function __construct(int $id = 0, int $idLang = 0)
+        {
+            $this->id = $id;
+            $this->iso_code = $id === 224 ? 'TR' : 'US';
+        }
+    }
+}
+
+if (!class_exists('Configuration')) {
+    class Configuration
+    {
+        public static function get(string $key)
+        {
+            return $key === 'PS_COUNTRY_DEFAULT' ? 224 : null;
+        }
     }
 }
 
@@ -27,6 +44,8 @@ if (!class_exists('Context')) {
         public $customer;
         public $cart;
         public $currency;
+        public $country;
+        public $language;
     }
 }
 
@@ -75,20 +94,25 @@ final class PublicPricingResolverTest extends TestCase
         $context = new Context();
         $originalCustomer = new Customer(42);
         $originalCart = new Cart();
+        $originalCountry = new Country(1);
         $context->customer = $originalCustomer;
         $context->cart = $originalCart;
+        $context->country = $originalCountry;
         $context->currency = (object) ['iso_code' => 'try'];
+        $context->language = (object) ['id' => 1];
 
         $result = (new PublicPricingResolver())->resolve(123, 456, 5.0, $context);
 
         self::assertSame(12.345678, $result->price());
         self::assertSame('TRY', $result->currency());
+        self::assertSame(224, $result->idCountry());
+        self::assertSame('TR', $result->country());
         self::assertSame($originalCustomer, $context->customer);
         self::assertSame($originalCart, $context->cart);
+        self::assertSame($originalCountry, $context->country);
         self::assertSame([null, 42], Product::$initCalls);
         self::assertSame(142, Product::$_taxCalculationMethod);
 
-        // getPriceStatic argument 7 is the quantity parameter.
         self::assertSame(5.0, Product::$priceCall[7]);
         self::assertSame(456, Product::$priceCall[2]);
         self::assertSame(0, Product::$priceCall[9]);
