@@ -8,15 +8,14 @@ final class CanonicalProductDTO implements \JsonSerializable
     public function jsonSerialize(): array { return $this->data; }
     private function assertRequiredStructure(array $data): void
     {
-        foreach (['schema_version','canonical_variant_id','category_type','source','context','timestamps','identity','commercial','verified_specs','declared_specs','derived_properties','suitability','evidence','links'] as $key) {
-            if (!array_key_exists($key, $data)) { throw new \InvalidArgumentException('Missing canonical product field: ' . $key); }
+        foreach (['schema_version','canonical_variant_id','product_group_id','category_type','source','context','timestamps','identity','content','commercial','verified_specs','declared_specs','derived_properties','suitability','evidence','media','links'] as $key) {
+            if (!array_key_exists($key,$data)) { throw new \InvalidArgumentException('Missing canonical product field: '.$key); }
         }
-        if (($data['schema_version'] ?? null) !== '1.0') { throw new \InvalidArgumentException('Unsupported canonical schema version.'); }
-        if (!is_string($data['canonical_variant_id']) || trim($data['canonical_variant_id']) === '') { throw new \InvalidArgumentException('Canonical variant id is required.'); }
-        if (!is_string($data['category_type']) || trim($data['category_type']) === '') { throw new \InvalidArgumentException('Category type is required.'); }
-        $source = $data['source'];
-        if (!is_array($source) || (int)($source['id_shop'] ?? 0) < 1 || (int)($source['id_product'] ?? 0) < 1 || (int)($source['id_product_attribute'] ?? -1) < 0) {
-            throw new \InvalidArgumentException('Invalid canonical source identity.');
-        }
+        if (($data['schema_version']??null)!=='1.0') { throw new \InvalidArgumentException('Unsupported canonical schema version.'); }
+        if (!is_string($data['canonical_variant_id'])||trim($data['canonical_variant_id'])==='') { throw new \InvalidArgumentException('Canonical variant id is required.'); }
+        if (!is_string($data['product_group_id'])||trim($data['product_group_id'])==='') { throw new \InvalidArgumentException('Product group id is required.'); }
+        if (!is_string($data['category_type'])||trim($data['category_type'])==='') { throw new \InvalidArgumentException('Category type is required.'); }
+        $source=$data['source'];
+        if (!is_array($source)||(int)($source['id_shop']??0)<1||(int)($source['id_product']??0)<1||(int)($source['id_product_attribute']??-1)<0) { throw new \InvalidArgumentException('Invalid canonical source identity.'); }
     }
 }
