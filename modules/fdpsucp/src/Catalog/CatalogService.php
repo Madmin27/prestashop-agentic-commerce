@@ -19,13 +19,27 @@ final class CatalogService
     public function search(array $body): Response
     {
         $query = trim((string) ($body['query'] ?? ''));
-        $limit = min(max((int) ($body['limit'] ?? 10), 1), 50);
-        $offset = max((int) ($body['offset'] ?? 0), 0);
+        $pagination = is_array($body['pagination'] ?? null) ? $body['pagination'] : [];
+        $limit = min(max((int) ($pagination['limit'] ?? $body['limit'] ?? 10), 1), 50);
+        $offset = isset($pagination['cursor'])
+            ? $this->decodeCursor((string) $pagination['cursor'])
+            : max((int) ($body['offset'] ?? 0), 0);
 
         $provider = CatalogProviderRegistry::collect()->getProvider();
         if ($provider !== null) {
-            $result = $provider->search(['query' => $query, 'limit' => $limit, 'offset' => $offset]);
-            return $this->searchResponse($result->products, $result->totalCount, $result->hasNextPage);
+            $result = $provider->search([
+                'query' => $query,
+                'filters' => is_array($body['filters'] ?? null) ? $body['filters'] : [],
+                'context' => is_array($body['context'] ?? null) ? $body['context'] : [],
+                'limit' => $limit,
+                'offset' => $offset,
+            ]);
+            return $this->searchResponse(
+                $result->products,
+                $result->totalCount,
+                $result->hasNextPage,
+                $result->cursor
+            );
         }
 
         return $this->defaultSearch($query, $limit, $offset);
@@ -79,7 +93,13 @@ final class CatalogService
             }
         }
 
-        return $this->searchResponse($products, $total, ($offset + $limit) < $total);
+        $hasNextPage = ($offset + count($products)) < $total;
+        return $this->searchResponse(
+            $products,
+            $total,
+            $hasNextPage,
+            $hasNextPage ? $this->encodeCursor($offset + count($products)) : null
+        );
     }
 
     private function defaultLookup(array $ids): Response
@@ -99,8 +119,20 @@ final class CatalogService
         return $this->lookupResponse($products);
     }
 
-    private function searchResponse(array $products, int $total, bool $hasNextPage): Response
-    {
+    private function searchResponse(
+        array $products,
+        int $total,
+        bool $hasNextPage,
+        ?string $cursor
+    ): Response {
+        $pagination = [
+            'total_count' => max(0, $total),
+            'has_next_page' => $hasNextPage,
+        ];
+        if ($hasNextPage && $cursor !== null && $cursor !== '') {
+            $pagination['cursor'] = $cursor;
+        }
+
         return Response::json(200, [
             'ucp' => [
                 'version' => CatalogProtocol::VERSION,
@@ -110,10 +142,7 @@ final class CatalogService
                 ],
             ],
             'products' => $products,
-            'pagination' => [
-                'total_count' => max(0, $total),
-                'has_next_page' => $hasNextPage,
-            ],
+            'pagination' => $pagination,
             'messages' => [],
         ]);
     }
@@ -131,5 +160,27 @@ final class CatalogService
             'products' => $products,
             'messages' => [],
         ]);
+    }
+
+    private function encodeCursor(int $offset): string
+    {
+        return rtrim(strtr(base64_encode('o:' . max(0, $offset)), '+/', '-_'), '=');
+    }
+
+    private function decodeCursor(string $cursor): int
+    {
+        $cursor = trim($cursor);
+        if ($cursor === '') {
+            return 0;
+        }
+        $padding = strlen($cursor) % 4;
+        if ($padding !== 0) {
+            $cursor .= str_repeat('=', 4 - $padding);
+        }
+        $decoded = base64_decode(strtr($cursor, '-_', '+/'), true);
+        if ($decoded === false || preg_match('/^o:(\d+)$/', $decoded, $m) !== 1) {
+            throw new \InvalidArgumentException('Invalid catalog pagination cursor.');
+        }
+        return (int) $m[1];
     }
 }
