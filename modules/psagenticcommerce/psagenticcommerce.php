@@ -52,6 +52,11 @@ final class PsAgenticCommerce extends Module
         $this->confirmUninstall = $this->trans('Uninstall the module? Canonical product metadata will be preserved; OpenAI connection credentials will be removed.', [], 'Modules.Psagenticcommerce.Admin');
     }
 
+    public function isUsingNewTranslationSystem(): bool
+    {
+        return true;
+    }
+
     public function install(): bool
     {
         if (version_compare(_PS_VERSION_, '8.2.0.0', '<') || PHP_VERSION_ID < 80000) {
@@ -214,7 +219,7 @@ final class PsAgenticCommerce extends Module
         $upload = (new CurlSftpClient())->upload((string) $result['path'], $config);
         (new OpenAiDeliveryAudit())->record($idShop, 'success', [
             'bytes' => (int) $upload['bytes'],
-            'message' => 'Uploaded snapshot to configured OpenAI SFTP destination.',
+            'message' => $this->trans('Uploaded snapshot to configured OpenAI SFTP destination.', [], 'Modules.Psagenticcommerce.Admin'),
         ]);
         return $result + ['uploaded_bytes' => (int) $upload['bytes']];
     }
@@ -227,16 +232,23 @@ final class PsAgenticCommerce extends Module
         $lastStatus = htmlspecialchars((string) ($status[OpenAiDeliveryAudit::LAST_STATUS] ?? ''), ENT_QUOTES, 'UTF-8');
         $lastAt = htmlspecialchars((string) ($status[OpenAiDeliveryAudit::LAST_AT] ?? ''), ENT_QUOTES, 'UTF-8');
         $lastMessage = htmlspecialchars((string) ($status[OpenAiDeliveryAudit::LAST_MESSAGE] ?? ''), ENT_QUOTES, 'UTF-8');
+        $title = htmlspecialchars($this->trans('OpenAI Feed Operations', [], 'Modules.Psagenticcommerce.Admin'), ENT_QUOTES, 'UTF-8');
+        $lastDelivery = htmlspecialchars($this->trans('Last delivery:', [], 'Modules.Psagenticcommerce.Admin'), ENT_QUOTES, 'UTF-8');
+        $never = htmlspecialchars($this->trans('never', [], 'Modules.Psagenticcommerce.Admin'), ENT_QUOTES, 'UTF-8');
+        $generate = htmlspecialchars($this->trans('Generate snapshot', [], 'Modules.Psagenticcommerce.Admin'), ENT_QUOTES, 'UTF-8');
+        $generateAndSend = htmlspecialchars($this->trans('Generate & send by SFTP', [], 'Modules.Psagenticcommerce.Admin'), ENT_QUOTES, 'UTF-8');
+        $cronEndpoint = htmlspecialchars($this->trans('Cron endpoint:', [], 'Modules.Psagenticcommerce.Admin'), ENT_QUOTES, 'UTF-8');
+        $cronHelp = htmlspecialchars($this->trans('Use POST with the X-Agentic-Cron-Token header. The token is intentionally not displayed here.', [], 'Modules.Psagenticcommerce.Admin'), ENT_QUOTES, 'UTF-8');
 
-        return '<div class="panel"><h3><i class="icon-refresh"></i> OpenAI Feed Operations</h3>'
-            . '<p><strong>Last delivery:</strong> ' . ($lastStatus !== '' ? $lastStatus : 'never') . ' ' . $lastAt . '</p>'
+        return '<div class="panel"><h3><i class="icon-refresh"></i> ' . $title . '</h3>'
+            . '<p><strong>' . $lastDelivery . '</strong> ' . ($lastStatus !== '' ? $lastStatus : $never) . ' ' . $lastAt . '</p>'
             . ($lastMessage !== '' ? '<p>' . $lastMessage . '</p>' : '')
             . '<form method="post" action="' . htmlspecialchars($action, ENT_QUOTES, 'UTF-8') . '">'
-            . '<button class="btn btn-default" type="submit" name="submitPsAgenticOpenAiGenerate"><i class="icon-file"></i> Generate snapshot</button> '
-            . '<button class="btn btn-primary" type="submit" name="submitPsAgenticOpenAiSend"><i class="icon-cloud-upload"></i> Generate &amp; send by SFTP</button>'
+            . '<button class="btn btn-default" type="submit" name="submitPsAgenticOpenAiGenerate"><i class="icon-file"></i> ' . $generate . '</button> '
+            . '<button class="btn btn-primary" type="submit" name="submitPsAgenticOpenAiSend"><i class="icon-cloud-upload"></i> ' . $generateAndSend . '</button>'
             . '</form><hr>'
-            . '<p><strong>Cron endpoint:</strong> <code>' . htmlspecialchars($cronUrl, ENT_QUOTES, 'UTF-8') . '</code></p>'
-            . '<p>Use POST with the <code>X-Agentic-Cron-Token</code> header. The token is intentionally not displayed here.</p>'
+            . '<p><strong>' . $cronEndpoint . '</strong> <code>' . htmlspecialchars($cronUrl, ENT_QUOTES, 'UTF-8') . '</code></p>'
+            . '<p>' . $cronHelp . '</p>'
             . '</div>';
     }
 }
