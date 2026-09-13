@@ -96,7 +96,7 @@ final class CanonicalBuilder
         $minimumQuantity = $combination && isset($combination->minimal_quantity)
             ? (float) $combination->minimal_quantity
             : (float) ($product->minimal_quantity ?: 1);
-        $image = $this->coverImage($product, $context->link);
+        $image = $this->coverImage($product, $context->link, $idLang);
 
         return new CanonicalProductDTO([
             'schema_version' => '1.0',
@@ -197,11 +197,18 @@ final class CanonicalBuilder
 
         $dimensions = [];
         foreach ($product->getAttributeCombinationsById($idProductAttribute, $idLang) ?: [] as $row) {
+            $groupId = (int) ($row['id_attribute_group'] ?? 0);
+            $attributeId = (int) ($row['id_attribute'] ?? 0);
+            $value = trim((string) ($row['attribute_name'] ?? ''));
+            if ($groupId < 1 || $attributeId < 1 || $value === '') {
+                continue;
+            }
+
             $dimensions[] = [
-                'group_id' => (int) ($row['id_attribute_group'] ?? 0),
+                'group_id' => $groupId,
                 'group_name' => trim((string) ($row['group_name'] ?? '')),
-                'attribute_id' => (int) ($row['id_attribute'] ?? 0),
-                'value' => trim((string) ($row['attribute_name'] ?? '')),
+                'attribute_id' => $attributeId,
+                'value' => $value,
             ];
         }
 
@@ -227,7 +234,7 @@ final class CanonicalBuilder
         return $result;
     }
 
-    private function coverImage(\Product $product, \Link $link): ?string
+    private function coverImage(\Product $product, \Link $link, int $idLang): ?string
     {
         $cover = \Product::getCover((int) $product->id);
         if (empty($cover['id_image'])) {
@@ -235,7 +242,7 @@ final class CanonicalBuilder
         }
 
         $rewrite = is_array($product->link_rewrite)
-            ? reset($product->link_rewrite)
+            ? ($product->link_rewrite[$idLang] ?? reset($product->link_rewrite))
             : $product->link_rewrite;
 
         return $link->getImageLink((string) $rewrite, (string) $cover['id_image']);
