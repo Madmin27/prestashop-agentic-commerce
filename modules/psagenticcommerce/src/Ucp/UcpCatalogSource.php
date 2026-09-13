@@ -8,9 +8,7 @@ if (!defined('_PS_VERSION_')) {
 
 final class UcpCatalogSource
 {
-    /**
-     * @return array{ids:array<int,int>,total:int,has_next:bool,next_offset:int}
-     */
+    /** @return array{ids:array<int,int>,total:int,has_next:bool,next_offset:int} */
     public function searchProductIds(\Context $context, string $query, int $limit, int $offset): array
     {
         $idLang = (int) $context->language->id;
@@ -51,7 +49,6 @@ final class UcpCatalogSource
             . ' AND ps.`active` = 1'
             . " AND ps.`visibility` <> 'none'"
             . ' AND ps.`show_price` = 1';
-
         $total = (int) \Db::getInstance()->getValue(
             'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'product_shop` ps WHERE ' . $where
         );
@@ -83,7 +80,6 @@ final class UcpCatalogSource
         if ($idProduct < 1 || $idShop < 1) {
             return [];
         }
-
         $rows = \Db::getInstance()->executeS(
             'SELECT pas.`id_product_attribute` FROM `' . _DB_PREFIX_ . 'product_attribute_shop` pas'
             . ' WHERE pas.`id_shop` = ' . $idShop
@@ -98,13 +94,10 @@ final class UcpCatalogSource
                 $ids[] = $id;
             }
         }
-
         return $ids === [] ? [0] : array_values(array_unique($ids));
     }
 
-    /**
-     * @return array<int,array{id_product:int,id_product_attribute:int|null}>
-     */
+    /** @return array<int,array{id_product:int,id_product_attribute:int|null,input_id:string,match:string}> */
     public function parseLookupIds(array $ids, int $idShop): array
     {
         $result = [];
@@ -113,7 +106,6 @@ final class UcpCatalogSource
             if ($id === '') {
                 continue;
             }
-
             if (preg_match('/^ps-(\d+)-(\d+)-(\d+)$/', $id, $m) === 1) {
                 if ((int) $m[1] !== $idShop) {
                     continue;
@@ -121,10 +113,11 @@ final class UcpCatalogSource
                 $result[] = [
                     'id_product' => (int) $m[2],
                     'id_product_attribute' => (int) $m[3],
+                    'input_id' => $id,
+                    'match' => 'exact',
                 ];
                 continue;
             }
-
             if (preg_match('/^ps-(\d+)-(\d+)$/', $id, $m) === 1) {
                 if ((int) $m[1] !== $idShop) {
                     continue;
@@ -132,15 +125,20 @@ final class UcpCatalogSource
                 $result[] = [
                     'id_product' => (int) $m[2],
                     'id_product_attribute' => null,
+                    'input_id' => $id,
+                    'match' => 'product',
                 ];
                 continue;
             }
-
             if (ctype_digit($id) && (int) $id > 0) {
-                $result[] = ['id_product' => (int) $id, 'id_product_attribute' => null];
+                $result[] = [
+                    'id_product' => (int) $id,
+                    'id_product_attribute' => null,
+                    'input_id' => $id,
+                    'match' => 'product',
+                ];
             }
         }
-
         return $result;
     }
 }
