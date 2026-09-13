@@ -38,7 +38,8 @@ final class CatalogService
                 $result->products,
                 $result->totalCount,
                 $result->hasNextPage,
-                $result->cursor
+                $result->cursor,
+                CatalogProtocol::VERSION
             );
         }
 
@@ -56,7 +57,7 @@ final class CatalogService
         $provider = CatalogProviderRegistry::collect()->getProvider();
         if ($provider !== null) {
             $result = $provider->lookup($ids);
-            return $this->lookupResponse($result->products);
+            return $this->lookupResponse($result->products, CatalogProtocol::VERSION);
         }
 
         return $this->defaultLookup($ids);
@@ -98,7 +99,8 @@ final class CatalogService
             $products,
             $total,
             $hasNextPage,
-            $hasNextPage ? $this->encodeCursor($offset + count($products)) : null
+            $hasNextPage ? $this->encodeCursor($offset + count($products)) : null,
+            Formatter::UCP_VERSION
         );
     }
 
@@ -116,14 +118,15 @@ final class CatalogService
             }
         }
 
-        return $this->lookupResponse($products);
+        return $this->lookupResponse($products, Formatter::UCP_VERSION);
     }
 
     private function searchResponse(
         array $products,
         int $total,
         bool $hasNextPage,
-        ?string $cursor
+        ?string $cursor,
+        string $version
     ): Response {
         $pagination = [
             'total_count' => max(0, $total),
@@ -135,10 +138,10 @@ final class CatalogService
 
         return Response::json(200, [
             'ucp' => [
-                'version' => CatalogProtocol::VERSION,
+                'version' => $version,
                 'status' => 'success',
                 'capabilities' => [
-                    'dev.ucp.shopping.catalog.search' => [['version' => CatalogProtocol::VERSION]],
+                    'dev.ucp.shopping.catalog.search' => [['version' => $version]],
                 ],
             ],
             'products' => $products,
@@ -147,14 +150,14 @@ final class CatalogService
         ]);
     }
 
-    private function lookupResponse(array $products): Response
+    private function lookupResponse(array $products, string $version): Response
     {
         return Response::json(200, [
             'ucp' => [
-                'version' => CatalogProtocol::VERSION,
+                'version' => $version,
                 'status' => 'success',
                 'capabilities' => [
-                    'dev.ucp.shopping.catalog.lookup' => [['version' => CatalogProtocol::VERSION]],
+                    'dev.ucp.shopping.catalog.lookup' => [['version' => $version]],
                 ],
             ],
             'products' => $products,
