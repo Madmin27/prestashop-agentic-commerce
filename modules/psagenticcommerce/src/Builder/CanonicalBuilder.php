@@ -29,6 +29,10 @@ final class CanonicalBuilder
         $idShop = (int) $context->shop->id;
         $idLang = (int) $context->language->id;
         $idCurrency = (int) $context->currency->id;
+        $idCountry = (int) ($context->country->id ?? \Configuration::get('PS_COUNTRY_DEFAULT'));
+        $countryIso = strtoupper((string) (
+            $context->country->iso_code ?? \Country::getIsoById($idCountry)
+        ));
 
         $product = new \Product($idProduct, false, $idLang, $idShop);
         if (!\Validate::isLoadedObject($product) || !$product->active) {
@@ -117,6 +121,8 @@ final class CanonicalBuilder
                 'locale' => (string) ($context->language->locale ?? $context->language->iso_code ?? 'en'),
                 'id_currency' => $idCurrency,
                 'currency' => $currency,
+                'id_country' => $idCountry,
+                'country' => $countryIso,
                 'pricing_context' => 'runtime_context_tax_included',
             ],
             'timestamps' => [
