@@ -58,6 +58,9 @@ final class Router
             if ($method === 'POST' && ($segments[1] ?? '') === 'lookup') {
                 return $catalog->lookup($body);
             }
+            if ($method === 'POST' && ($segments[1] ?? '') === 'product') {
+                return $catalog->product($body);
+            }
             return UcpError::response('not_found', 'Unknown catalog route', 404);
         }
 
