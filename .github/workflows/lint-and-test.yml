@@ -2,9 +2,11 @@ name: Lint & Test
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -14,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         php: ['8.2', '8.3', '8.4']
-        module: [fdpsucp, fdpsprism]
+        module: [fdpsucp, fdpsprism, psagenticcommerce]
     steps:
       - uses: actions/checkout@v4
       - name: Set up PHP
@@ -30,16 +32,34 @@ jobs:
         working-directory: modules/${{ matrix.module }}
         run: vendor/bin/phpunit --testdox
 
-  lint:
-    name: PHP Syntax Check
+  smoke:
+    name: AI JSON smoke — PHP 8.0
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          tools: composer:v2
+          php-version: '8.0'
+          coverage: none
+      - name: Run dependency-free smoke test
+        working-directory: modules/psagenticcommerce
+        run: php tests/smoke.php
+
+  lint:
+    name: PHP ${{ matrix.php }} Syntax Check
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.0', '8.2']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
       - name: Check syntax
         run: |
           find modules -path '*/vendor/*' -prune -o -name '*.php' -print0 \

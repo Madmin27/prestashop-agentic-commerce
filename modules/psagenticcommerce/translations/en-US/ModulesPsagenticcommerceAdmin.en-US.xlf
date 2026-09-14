@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="modules/psagenticcommerce" source-language="en" target-language="en-US" datatype="plaintext">
+    <body>
+      <trans-unit id="7f8233f2acae6d7301bef963b68be584" approved="yes"><source>PrestaShop Agentic Commerce</source><target xml:lang="en-US" state="translated">PrestaShop Agentic Commerce</target></trans-unit>
+      <trans-unit id="fba12eda95b18e69640dfa5bdf8e37cf" approved="yes"><source>Canonical product data, AI JSON, UCP catalog and OpenAI product feed integration.</source><target xml:lang="en-US" state="translated">Canonical product data, AI JSON, UCP catalog and OpenAI product feed integration.</target></trans-unit>
+      <trans-unit id="2926737cbae8a1e014bf68d79b1d883c" approved="yes"><source>Uninstall the module? Canonical product metadata will be preserved; OpenAI connection credentials will be removed.</source><target xml:lang="en-US" state="translated">Uninstall the module? Canonical product metadata will be preserved; OpenAI connection credentials will be removed.</target></trans-unit>
+      <trans-unit id="28e438af5220d511076c7786957464db" approved="yes"><source>Select a concrete shop before configuring this module.</source><target xml:lang="en-US" state="translated">Select a concrete shop before configuring this module.</target></trans-unit>
+      <trans-unit id="d82aed9f2c08c8a60e43806d932a43a8" approved="yes"><source>OpenAI settings saved for this shop.</source><target xml:lang="en-US" state="translated">OpenAI settings saved for this shop.</target></trans-unit>
+      <trans-unit id="485afcb5cb1edd29591aafd3eaeb44ad" approved="yes"><source>Snapshot complete: %d exported, %d skipped.</source><target xml:lang="en-US" state="translated">Snapshot complete: %d exported, %d skipped.</target></trans-unit>
+      <trans-unit id="c0369cf6531ae6e7c9d4f94dc8bd6c04" approved="yes"><source>SFTP upload completed.</source><target xml:lang="en-US" state="translated">SFTP upload completed.</target></trans-unit>
+      <trans-unit id="d27fcc4ff8b7e9057e1e32296bf7068a" approved="yes"><source>OpenAI Feed Operations</source><target xml:lang="en-US" state="translated">OpenAI Feed Operations</target></trans-unit>
+      <trans-unit id="f634572e8b2ae54877e129e6f6c96447" approved="yes"><source>Last delivery:</source><target xml:lang="en-US" state="translated">Last delivery:</target></trans-unit>
+      <trans-unit id="c7561db7a418dd39b2201dfe110ab4a4" approved="yes"><source>never</source><target xml:lang="en-US" state="translated">never</target></trans-unit>
+      <trans-unit id="d76d8ee8bf1b39575be119d637a03663" approved="yes"><source>Generate snapshot</source><target xml:lang="en-US" state="translated">Generate snapshot</target></trans-unit>
+      <trans-unit id="4930410d48e88f56e036726a0db814c8" approved="yes"><source>Generate &amp; send by SFTP</source><target xml:lang="en-US" state="translated">Generate &amp; send by SFTP</target></trans-unit>
+      <trans-unit id="191a0311c9e2bbb1d8d4f6f355ef4fdd" approved="yes"><source>Cron endpoint:</source><target xml:lang="en-US" state="translated">Cron endpoint:</target></trans-unit>
+      <trans-unit id="5efb3c92f34c088630b448b5fa0106f2" approved="yes"><source>Use POST with the X-Agentic-Cron-Token header. The token is intentionally not displayed here.</source><target xml:lang="en-US" state="translated">Use POST with the X-Agentic-Cron-Token header. The token is intentionally not displayed here.</target></trans-unit>
+      <trans-unit id="25527899e7cdc91c215e643c515eaa19" approved="yes"><source>OpenAI Merchant Feed</source><target xml:lang="en-US" state="translated">OpenAI Merchant Feed</target></trans-unit>
+      <trans-unit id="1110743282a548b3f013cf52ae12661f" approved="yes"><source>These values are stored per shop and used to build the OpenAI full product snapshot.</source><target xml:lang="en-US" state="translated">These values are stored per shop and used to build the OpenAI full product snapshot.</target></trans-unit>
+      <trans-unit id="88f7bed6a24843bb3009984258df148b" approved="yes"><source>Seller name</source><target xml:lang="en-US" state="translated">Seller name</target></trans-unit>
+      <trans-unit id="7ee0a640868981bbeb2242c5f91d424b" approved="yes"><source>Seller URL</source><target xml:lang="en-US" state="translated">Seller URL</target></trans-unit>
+      <trans-unit id="2be39e80f18490a1446b7357fc836793" approved="yes"><source>Return policy URL</source><target xml:lang="en-US" state="translated">Return policy URL</target></trans-unit>
+      <trans-unit id="faecf2cbbfdea4655d52e3db1d608b44" approved="yes"><source>Target countries</source><target xml:lang="en-US" state="translated">Target countries</target></trans-unit>
+      <trans-unit id="c395ade985e84dd8a6ae552def4da79b" approved="yes"><source>Store country</source><target xml:lang="en-US" state="translated">Store country</target></trans-unit>
+      <trans-unit id="d8cfe522e3677ed5b96508bfd0a8e56e" approved="yes"><source>Default brand</source><target xml:lang="en-US" state="translated">Default brand</target></trans-unit>
+      <trans-unit id="f64113c2d5f41e3b880cd9bff2f6c9eb" approved="yes"><source>Eligible for search</source><target xml:lang="en-US" state="translated">Eligible for search</target></trans-unit>
+      <trans-unit id="a75284c9a5388912ac80213a6882a0ae" approved="yes"><source>Eligible for checkout</source><target xml:lang="en-US" state="translated">Eligible for checkout</target></trans-unit>
+      <trans-unit id="4e86c1fd72fe463cdbe67c5704dbd4d9" approved="yes"><source>Privacy policy URL</source><target xml:lang="en-US" state="translated">Privacy policy URL</target></trans-unit>
+      <trans-unit id="bed88e9470769f89f7f75a67f060e503" approved="yes"><source>Terms URL</source><target xml:lang="en-US" state="translated">Terms URL</target></trans-unit>
+      <trans-unit id="0d76395d3efcc6a45c6791873b585ec5" approved="yes"><source>Ads eligibility</source><target xml:lang="en-US" state="translated">Ads eligibility</target></trans-unit>
+      <trans-unit id="dd3195ced9c1810388e28ca2b4eb921f" approved="yes"><source>Not specified</source><target xml:lang="en-US" state="translated">Not specified</target></trans-unit>
+      <trans-unit id="4358876405775b10c44268aeeeec5f50" approved="yes"><source>Eligible</source><target xml:lang="en-US" state="translated">Eligible</target></trans-unit>
+      <trans-unit id="c1d0ec5e47fd458f25ae5a89bfe74489" approved="yes"><source>Not eligible</source><target xml:lang="en-US" state="translated">Not eligible</target></trans-unit>
+      <trans-unit id="4240d09760333746ca0c35e3792dc2cc" approved="yes"><source>OpenAI SFTP Delivery</source><target xml:lang="en-US" state="translated">OpenAI SFTP Delivery</target></trans-unit>
+      <trans-unit id="b5b767780927e32fca6f869233fe5d90" approved="yes"><source>Enter the SFTP values provided during merchant onboarding. Host-key verification is mandatory.</source><target xml:lang="en-US" state="translated">Enter the SFTP values provided during merchant onboarding. Host-key verification is mandatory.</target></trans-unit>
+      <trans-unit id="a08746650af47127b7b794315a14c185" approved="yes"><source>Enable SFTP delivery</source><target xml:lang="en-US" state="translated">Enable SFTP delivery</target></trans-unit>
+      <trans-unit id="b08c545ddc52c4fa1b815f3000312443" approved="yes"><source>SFTP host</source><target xml:lang="en-US" state="translated">SFTP host</target></trans-unit>
+      <trans-unit id="e46a9646204689cefb23c879a04cec2f" approved="yes"><source>SFTP port</source><target xml:lang="en-US" state="translated">SFTP port</target></trans-unit>
+      <trans-unit id="f6039d44b29456b20f8f373155ae4973" approved="yes"><source>Username</source><target xml:lang="en-US" state="translated">Username</target></trans-unit>
+      <trans-unit id="c75f7811d70d17dbcd88e9d03752cbed" approved="yes"><source>Authentication</source><target xml:lang="en-US" state="translated">Authentication</target></trans-unit>
+      <trans-unit id="60c458e3aa525959ff73b290c495ac77" approved="yes"><source>Account secret</source><target xml:lang="en-US" state="translated">Account secret</target></trans-unit>
+      <trans-unit id="a65aa36918601757b1305a20adc323e4" approved="yes"><source>SSH public key</source><target xml:lang="en-US" state="translated">SSH public key</target></trans-unit>
+      <trans-unit id="6150c46ca089c5eb9a3fe2f79a30403b" approved="yes"><source>Authentication secret</source><target xml:lang="en-US" state="translated">Authentication secret</target></trans-unit>
+      <trans-unit id="20dd6b162cade54d5aa0aa438d9e7743" approved="yes"><source>Leave blank to keep the currently stored encrypted value.</source><target xml:lang="en-US" state="translated">Leave blank to keep the currently stored encrypted value.</target></trans-unit>
+      <trans-unit id="83c402ff8427cfebadebcc2294363492" approved="yes"><source>Clear stored authentication secret</source><target xml:lang="en-US" state="translated">Clear stored authentication secret</target></trans-unit>
+      <trans-unit id="cd8eb85943bea6e77bd8545003931d46" approved="yes"><source>Private key file path</source><target xml:lang="en-US" state="translated">Private key file path</target></trans-unit>
+      <trans-unit id="471cb09fcbc64e273a0e6d66e7811020" approved="yes"><source>Public key file path</source><target xml:lang="en-US" state="translated">Public key file path</target></trans-unit>
+      <trans-unit id="01eff1ebcdbc35ccd71964b00b8cf2c8" approved="yes"><source>Private-key passphrase</source><target xml:lang="en-US" state="translated">Private-key passphrase</target></trans-unit>
+      <trans-unit id="d9019b959b633324bad3468ef47c91fe" approved="yes"><source>Clear stored key passphrase</source><target xml:lang="en-US" state="translated">Clear stored key passphrase</target></trans-unit>
+      <trans-unit id="59004707fec7b44d3ae1a97ad76cb01e" approved="yes"><source>Remote file path</source><target xml:lang="en-US" state="translated">Remote file path</target></trans-unit>
+      <trans-unit id="2c5919ebf066298f721103565f2c58d1" approved="yes"><source>SSH host key SHA256</source><target xml:lang="en-US" state="translated">SSH host key SHA256</target></trans-unit>
+      <trans-unit id="3b6ffd06b438dcbb8b1df57e74ed2db4" approved="yes"><source>SSH host key MD5 fallback</source><target xml:lang="en-US" state="translated">SSH host key MD5 fallback</target></trans-unit>
+      <trans-unit id="31c516245034909cc4b5d17e94b2a30a" approved="yes"><source>known_hosts file path</source><target xml:lang="en-US" state="translated">known_hosts file path</target></trans-unit>
+      <trans-unit id="7574115c8ea2d85cf3d0d0023f2ae0bd" approved="yes"><source>Transfer timeout (seconds)</source><target xml:lang="en-US" state="translated">Transfer timeout (seconds)</target></trans-unit>
+      <trans-unit id="d0970ede0a15189ccf60baf5761f665f" approved="yes"><source>Cron token</source><target xml:lang="en-US" state="translated">Cron token</target></trans-unit>
+      <trans-unit id="2761a2e08ccaeb1dcb0aa16e2bde165c" approved="yes"><source>Use this only in the X-Agentic-Cron-Token HTTP header. Do not put it in the cron URL.</source><target xml:lang="en-US" state="translated">Use this only in the X-Agentic-Cron-Token HTTP header. Do not put it in the cron URL.</target></trans-unit>
+      <trans-unit id="d4dccb8ca2dac4e53c01bd9954755332" approved="yes"><source>Save settings</source><target xml:lang="en-US" state="translated">Save settings</target></trans-unit>
+      <trans-unit id="93cba07454f06a4a960172bbd6e2a435" approved="yes"><source>Yes</source><target xml:lang="en-US" state="translated">Yes</target></trans-unit>
+      <trans-unit id="bafd7322c6e97d25b6299b5d6fe8920b" approved="yes"><source>No</source><target xml:lang="en-US" state="translated">No</target></trans-unit>
+      <trans-unit id="1ca2e366d241625576803f658b1b8417" approved="yes"><source>Uploaded snapshot to configured OpenAI SFTP destination.</source><target xml:lang="en-US" state="translated">Uploaded snapshot to configured OpenAI SFTP destination.</target></trans-unit>
+    </body>
+  </file>
+</xliff>

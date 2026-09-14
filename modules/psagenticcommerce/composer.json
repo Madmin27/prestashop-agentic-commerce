@@ -1,0 +1,12 @@
+{
+  "name": "prestashop-agentic-commerce/psagenticcommerce",
+  "description": "Merchant-neutral canonical product and AI commerce module for PrestaShop",
+  "type": "prestashop-module",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.6 || ^10.5 || ^11.0"
+  }
+}
