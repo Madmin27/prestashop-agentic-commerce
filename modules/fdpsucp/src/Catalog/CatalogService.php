@@ -80,6 +80,41 @@ final class CatalogService
         return $this->defaultLookup($ids);
     }
 
+    public function product(array $body): Response
+    {
+        $id = trim((string) ($body['id'] ?? ''));
+        if ($id === '') {
+            return UcpError::response('missing_id', 'id is required', 400);
+        }
+
+        $provider = CatalogProviderRegistry::collect()->getProvider();
+        if ($provider !== null) {
+            $result = $provider->lookup([$id], [
+                'context' => is_array($body['context'] ?? null) ? $body['context'] : [],
+                'selected' => is_array($body['selected'] ?? null) ? $body['selected'] : [],
+                'preferences' => is_array($body['preferences'] ?? null) ? $body['preferences'] : [],
+            ]);
+            if ($result->products === []) {
+                return UcpError::response('not_found', 'Catalog product not found', 404);
+            }
+            return $this->productResponse($result->products[0], CatalogProtocol::VERSION, $result->messages);
+        }
+
+        if (!ctype_digit($id)) {
+            return UcpError::response('not_found', 'Catalog product not found', 404);
+        }
+        $idLang = (int) $this->context->language->id;
+        $product = new \Product((int) $id, false, $idLang);
+        if (!\Validate::isLoadedObject($product) || !$product->active) {
+            return UcpError::response('not_found', 'Catalog product not found', 404);
+        }
+
+        return $this->productResponse(
+            Formatter::product($product, $idLang, $this->context->currency->iso_code, $this->context->link),
+            Formatter::UCP_VERSION
+        );
+    }
+
     private function defaultSearch(string $query, int $limit, int $offset): Response
     {
         $idLang = (int) $this->context->language->id;
@@ -182,6 +217,21 @@ final class CatalogService
                 ],
             ],
             'products' => $products,
+            'messages' => array_values($messages),
+        ]);
+    }
+
+    private function productResponse(array $product, string $version, array $messages = []): Response
+    {
+        return Response::json(200, [
+            'ucp' => [
+                'version' => $version,
+                'status' => 'success',
+                'capabilities' => [
+                    'dev.ucp.shopping.catalog.lookup' => [['version' => $version]],
+                ],
+            ],
+            'product' => $product,
             'messages' => array_values($messages),
         ]);
     }
