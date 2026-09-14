@@ -88,6 +88,25 @@ function smokePayload(string $variantId, string $title, string $visibility = 'bo
     ];
 }
 
+function assertTranslationIds(string $file): void
+{
+    $xml = simplexml_load_file($file);
+    smokeAssert($xml !== false, 'Translation file is not valid XML: ' . $file);
+    $xml->registerXPathNamespace('x', 'urn:oasis:names:tc:xliff:document:1.2');
+
+    $ids = [];
+    foreach ($xml->xpath('//x:trans-unit') ?: [] as $unit) {
+        $source = (string) $unit->source;
+        $id = (string) $unit['id'];
+        smokeAssert($source !== '', 'Translation source is empty: ' . $file);
+        smokeAssert($id === md5($source), 'Translation id is not PrestaShop-compatible: ' . $source);
+        smokeAssert(!isset($ids[$id]), 'Duplicate translation id: ' . $id);
+        $ids[$id] = true;
+    }
+
+    smokeAssert($ids !== [], 'Translation file contains no messages: ' . $file);
+}
+
 $representation = new RepresentationKey(1, 1, 'tr', 'tr_TR', 1, 'TRY', 224, 'TR');
 smokeAssert(
     $representation->catalogPath() === '/ai/v1/s1/tr-TR/TRY/TR/catalog.json',
@@ -166,5 +185,8 @@ smokeAssert(
 json_decode($exporter->encode($catalog), true, 512, JSON_THROW_ON_ERROR);
 json_decode($exporter->encode($document), true, 512, JSON_THROW_ON_ERROR);
 json_decode($exporter->encode($manifest), true, 512, JSON_THROW_ON_ERROR);
+
+assertTranslationIds(dirname(__DIR__) . '/translations/en-US/ModulesPsagenticcommerceAdmin.en-US.xlf');
+assertTranslationIds(dirname(__DIR__) . '/translations/tr-TR/ModulesPsagenticcommerceAdmin.tr-TR.xlf');
 
 echo "psagenticcommerce smoke: OK\n";

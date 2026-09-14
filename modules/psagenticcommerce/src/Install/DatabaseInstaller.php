@@ -141,13 +141,19 @@ final class DatabaseInstaller
 
     private function columnExists(\Db $db, string $table, string $column): bool
     {
-        $row = $db->getRow("SHOW COLUMNS FROM `$table` LIKE '" . pSQL($column) . "'");
-        return is_array($row) && $row !== [];
+        $sql = "SELECT COUNT(*) FROM information_schema.columns
+            WHERE table_schema = DATABASE()
+            AND table_name = '" . pSQL($table) . "'
+            AND column_name = '" . pSQL($column) . "'";
+        return (int) $db->getValue($sql) > 0;
     }
 
     private function indexExists(\Db $db, string $table, string $index): bool
     {
-        $row = $db->getRow("SHOW INDEX FROM `$table` WHERE `Key_name` = '" . pSQL($index) . "'");
-        return is_array($row) && $row !== [];
+        $sql = "SELECT COUNT(*) FROM information_schema.statistics
+            WHERE table_schema = DATABASE()
+            AND table_name = '" . pSQL($table) . "'
+            AND index_name = '" . pSQL($index) . "'";
+        return (int) $db->getValue($sql) > 0;
     }
 }

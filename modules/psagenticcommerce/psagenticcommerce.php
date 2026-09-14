@@ -57,6 +57,11 @@ final class PsAgenticCommerce extends Module
         return true;
     }
 
+    public function translateAdmin(string $id, array $parameters = [], ?string $domain = null): string
+    {
+        return $this->trans($id, $parameters, $domain ?: 'Modules.Psagenticcommerce.Admin');
+    }
+
     public function install(): bool
     {
         if (version_compare(_PS_VERSION_, '8.2.0.0', '<') || PHP_VERSION_ID < 80000) {
